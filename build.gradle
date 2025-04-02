@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.10"  // 최신 버전 사용
+}
+
+test {
+    useJUnitPlatform()  // JUnit5 사용 설정 (중복이라도 명시적으로 설정)
+    finalizedBy jacocoTestReport  // 테스트 후 리포트 생성하도록 설정
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required.set(true)  // HTML 리포트 생성
+        xml.required.set(true)   // XML 리포트 생성
+        csv.required.set(false)
+        html.outputLocation.set(file("$buildDir/reports/jacoco")) // 리포트 위치 설정
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.8  // 최소 커버리지 80%로 설정
+            }
+        }
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2024.0.0")
+}
+
+dependencies {
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'  // JWT API
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'    // JWT 구현체
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리를 위한 Jackson 모듈
+
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+

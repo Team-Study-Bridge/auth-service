@@ -1,0 +1,28 @@
+package com.example.authservice.model;
+
+import com.example.authservice.type.Provider;
+import com.example.authservice.type.Role;
+import com.example.authservice.type.Status;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.sql.Timestamp;
+
+@Getter
+@Builder
+public class User {
+    private Long id;
+    private String email;
+    private String password;
+    private String nickname;
+    private Role role;
+    private Provider provider;
+    private String providerId;
+    private String profileImage;
+    private Status status;
+    private Timestamp lastLogin;
+    private Timestamp createdAt;
+    private String phoneNumber;
+    private boolean isVerified;
+}
