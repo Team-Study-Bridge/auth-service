@@ -16,6 +16,7 @@ public class User {
     private String email;
     private String password;
     private String nickname;
+    private String phoneNumber;
     private Role role;
     private Provider provider;
     private String providerId;
@@ -23,6 +24,5 @@ public class User {
     private Status status;
     private Timestamp lastLogin;
     private Timestamp createdAt;
-    private String phoneNumber;
     private boolean isVerified;
 }

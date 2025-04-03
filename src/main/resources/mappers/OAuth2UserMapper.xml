@@ -4,20 +4,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.authservice.mapper.OAuth2UserMapper">
-    <resultMap id="userResultMap" type="User">
-        <result property="id" column="id"/>
+    <resultMap id="userResultMap" type="com.example.authservice.model.User">
+        <id property="id" column="id"/>
         <result property="email" column="email"/>
         <result property="password" column="password"/>
         <result property="nickname" column="nickname"/>
-        <result property="phoneNumber" column="phone_number"/>
-        <result property="role" column="role"/>
-        <result property="provider" column="provider"/>
         <result property="providerId" column="provider_id"/>
         <result property="profileImage" column="profile_image"/>
-        <result property="status" column="status"/>
         <result property="lastLogin" column="last_login"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="phoneNumber" column="phone_number"/>
         <result property="isVerified" column="is_verified"/>
-
+        <result property="role" column="role" javaType="com.example.authservice.type.Role"/>
+        <result property="provider" column="provider" javaType="com.example.authservice.type.Provider"/>
+        <result property="status" column="status" javaType="com.example.authservice.type.Status"/>
     </resultMap>
 
     <select id="findByUserIdAndProvider"

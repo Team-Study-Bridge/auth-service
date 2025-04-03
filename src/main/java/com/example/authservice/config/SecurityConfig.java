@@ -14,6 +14,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig {
 
@@ -26,21 +28,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors().configurationSource(corsConfigurationSource()) // CORS 설정 추가
-                .and()
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.requestMatchers("/**")
-                                .permitAll()
-                                .anyRequest().authenticated()
-                );
+                .cors(withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auths/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+//                        .hasAnyRole("STUDENT", "INSTRUCTOR", "ADMIN") // 역할에 따른 권한 설정
+                        .anyRequest().authenticated()
+                )
+                .formLogin(AbstractHttpConfigurer::disable);  // 만약 JWT 인증을 사용한다면 formLogin 비활성화
 
         return http.build();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080")); // React 앱의 URL
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000")); // React 앱의 URL
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true); // 쿠키 전송 허용 (JWT 인증 사용 시 필요)
@@ -52,7 +56,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

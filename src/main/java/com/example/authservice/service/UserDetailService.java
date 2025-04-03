@@ -20,16 +20,18 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+            User userByEmail = userMapper.findByEmail(email);
+            System.out.println("userByEmail: " + userByEmail);
 
-        User userByEmail = userMapper.findByEmail(email);
+            if (userByEmail == null) {
+                throw new UsernameNotFoundException(email + " not found");
+            }
+            System.out.println("User Role: " + userByEmail.getRole());
 
-        if (userByEmail == null) {
-            throw new UsernameNotFoundException(email + " not found");
-        }
+            return CustomUserDetails.builder()
+                    .user(userByEmail)
+                    .roles(List.of(userByEmail.getRole()))
+                    .build();
 
-        return CustomUserDetails.builder()
-                .user(userByEmail)
-                .roles(List.of(String.valueOf(userByEmail.getRole())))
-                .build();
     }
 }

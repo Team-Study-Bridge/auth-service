@@ -38,7 +38,6 @@ public class UserController {
 
     @PostMapping("/login")
     public UserLoginResponseDTO login(@RequestBody UserLoginRequestDTO userLoginRequestDTO, HttpServletResponse response) {
-        System.out.println(userLoginRequestDTO.getEmail());
         return userService.login(userLoginRequestDTO.getEmail(), userLoginRequestDTO.getPassword(), response);
     }
 }

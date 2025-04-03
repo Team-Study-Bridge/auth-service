@@ -4,18 +4,44 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.authservice.mapper.UserMapper">
+    <resultMap id="userResultMap" type="com.example.authservice.model.User">
+        <id property="id" column="id"/>
+        <result property="email" column="email" javaType="java.lang.String" />
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="phoneNumber" column="phone_number"/>
+
+        <!-- Enum 타입 핸들러 적용 -->
+        <result property="role" column="role"
+                javaType="com.example.authservice.type.Role"
+                typeHandler="com.example.authservice.type.handler.RoleTypeHandler"/>
+
+        <result property="provider" column="provider"
+                javaType="com.example.authservice.type.Provider"
+                typeHandler="com.example.authservice.type.handler.ProviderTypeHandler"/>
+
+        <result property="providerId" column="provider_id"/>
+        <result property="profileImage" column="profile_image"/>
+        <result property="status" column="status"
+                javaType="com.example.authservice.type.Status"
+                typeHandler="com.example.authservice.type.handler.StatusTypeHandler"/>
+
+        <result property="lastLogin" column="last_login"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="isVerified" column="is_verified"/>
+    </resultMap>
+
 
     <!-- 사용자 등록 -->
     <insert id="insertUser" parameterType="User">
-        INSERT INTO users (email, password, nickname, provider, provider_id, profile_image,
-                           status, last_login, created_at, is_verified)
-        VALUES (#{email}, #{password}, #{nickname}, #{provider}, #{providerId},
-                #{profileImage}, #{status}, #{lastLogin}, #{createdAt}, #{isVerified})
+        INSERT INTO users (email, password, nickname, role, provider, status)
+        VALUES (#{email}, #{password}, #{nickname}, #{role}, #{provider}, #{status})
     </insert>
 
     <!-- 이메일로 사용자 조회 -->
-    <select id="findByEmail" parameterType="java.lang.String" resultType="User">
-        SELECT * FROM users WHERE email = #{email}
+    <select id="findByEmail" parameterType="String" resultMap="userResultMap">
+        SELECT *
+        FROM users WHERE email = #{email}
     </select>
 
     <!-- 사용자 정보 수정 -->

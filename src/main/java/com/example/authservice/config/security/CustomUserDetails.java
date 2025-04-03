@@ -1,6 +1,7 @@
 package com.example.authservice.config.security;
 
 import com.example.authservice.model.User;
+import com.example.authservice.type.Role;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,12 +16,12 @@ import java.util.stream.Collectors;
 @Builder
 public class CustomUserDetails implements UserDetails {
     private User user;
-    private List<String> roles;
+    private List<Role> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-                .map(SimpleGrantedAuthority::new)
+                .map(Role -> new SimpleGrantedAuthority("ROLE_" + Role))
                 .collect(Collectors.toList());
     }
 
