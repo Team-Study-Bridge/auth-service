@@ -1,5 +1,6 @@
 package com.example.authservice.service;
 
+import com.example.authservice.dto.SendCodeResponseDTO;
 import com.example.authservice.mapper.EmailVerificationMapper;
 import com.example.authservice.model.EmailVerification;
 import jakarta.mail.MessagingException;
@@ -24,7 +25,7 @@ public class EmailVerificationService {
         return String.valueOf(code);
     }
 
-    public void sendVerificationCode(String email) {
+    public SendCodeResponseDTO sendVerificationCode(String email) {
         String code = generateCode();
 
         EmailVerification verification = EmailVerification.builder()
@@ -33,11 +34,21 @@ public class EmailVerificationService {
                 .isVerified(false)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .build();
+        try {
+            emailVerificationMapper.insertEmailVerification(verification);
+            // 이메일 보내기
+            sendEmail(email, code);
 
-        emailVerificationMapper.insertEmailVerification(verification);
-
-        // 이메일 보내기
-        sendEmail(email, code);
+            return  SendCodeResponseDTO.builder()
+                    .success(true)
+                    .message("이메일에서 코드를 확인해주세요.")
+                    .build();
+        }catch (Exception e){
+            return SendCodeResponseDTO.builder()
+                    .success(false)
+                    .message("이메일 발송중 오류가 발생하였습니다")
+                    .build();
+        }
     }
 
     public void sendEmail(String toEmail, String code) {

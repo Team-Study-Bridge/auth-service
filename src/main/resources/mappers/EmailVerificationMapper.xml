@@ -13,7 +13,8 @@
 
     <!-- 이메일로 인증 정보 검색 -->
     <select id="findByEmail" parameterType="String" resultType="com.example.authservice.model.EmailVerification">
-        SELECT * FROM email_verification WHERE email = #{email}
+        SELECT *
+        FROM email_verification WHERE email = #{email}
     </select>
 
     <!-- 이메일과 코드로 인증 정보 검색 -->

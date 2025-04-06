@@ -8,6 +8,6 @@ import java.util.List;
 @Getter
 @Builder
 public class ClaimsResponseDTO {
-    private String email;
-    private List<String> roles;
+    private String nickname;
+    private String profileImage;
 }

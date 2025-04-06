@@ -44,7 +44,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000")); // React 앱의 URL
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true); // 쿠키 전송 허용 (JWT 인증 사용 시 필요)
@@ -55,9 +55,4 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
 }

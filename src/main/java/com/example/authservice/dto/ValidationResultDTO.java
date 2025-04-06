@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserLoginResponseDTO {
-    private boolean loggedIn;
-    private String accessToken;
-    private String message;
+public class ValidationResultDTO {
+    private boolean success;
+    private String passwordError;
+    private String nicknameError;
 }

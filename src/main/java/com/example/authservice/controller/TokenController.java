@@ -2,12 +2,11 @@ package com.example.authservice.controller;
 
 import com.example.authservice.dto.*;
 import com.example.authservice.service.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -18,22 +17,14 @@ public class TokenController {
     private final TokenService tokenService;
 
     @PostMapping("/refresh")
-    public RefreshTokenResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        log.info("Refresh token request ");
-        return tokenService.refreshToken(refreshTokenRequestDTO.getRefreshToken());
+    public RefreshTokenResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO,
+                                                HttpServletRequest request,
+                                                HttpServletResponse response) {
+        return tokenService.refreshToken(refreshTokenRequestDTO.getRefreshToken(),response,request);
     }
 
     @PostMapping("/validToken")
     public ValidTokenResponseDTO validToken(@RequestBody ValidTokenRequestDTO validTokenRequestDTO) {
-        log.info("Validate token request ");
         return tokenService.validateToken(validTokenRequestDTO.getToken());
     }
-
-    @PostMapping("/claims")
-    public ClaimsResponseDTO claims(@RequestBody ClaimsRequestDTO claimsRequestDTO) {
-        log.info("Claims request ");
-        return tokenService.getAuthentication(claimsRequestDTO.getToken());
-    }
-
 }
-

@@ -5,7 +5,9 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ValidTokenResponseDTO {
-    private boolean isValid;
+public class TokenResponseDTO {
+    private String accessToken;
+    private String refreshToken;
+    private boolean success;
     private String message;
 }

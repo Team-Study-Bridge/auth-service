@@ -14,6 +14,7 @@ public class UserJoinRequestDTO {
     private String email;
     private String password;
     private String nickname;
+    private String profileImage;
     private Role role;
     private Provider provider;
     private Status status;
@@ -23,6 +24,7 @@ public class UserJoinRequestDTO {
                 .email(email)
                 .password(bCryptPasswordEncoder.encode(password))
                 .nickname(nickname)
+                .profileImage(profileImage != null ? profileImage : "")
                 .role(role != null ? role : Role.STUDENT)
                 .provider(provider != null ? provider : Provider.LOCAL)
                 .status(status != null ? status : Status.ACTIVE)

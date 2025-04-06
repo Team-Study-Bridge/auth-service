@@ -1,10 +1,11 @@
 package com.example.authservice.service;
 
-
 import com.example.authservice.config.security.CustomOAuth2User;
+import com.example.authservice.dto.TokenRequestDTO;
 import com.example.authservice.mapper.OAuth2UserMapper;
 import com.example.authservice.model.User;
 import com.example.authservice.type.Provider;
+import com.example.authservice.type.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -22,7 +23,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final OAuth2UserMapper oAuth2UserMapper;
     private final TokenProviderService tokenProviderService;
 
-
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -38,20 +38,29 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (existingUser == null) {
             User newUser = User.builder()
-                    .providerId(providerId)  // 네이버에서 받은 고유 ID 저장
-                    .nickname(name)  // 네이버에서 가져온 유저 이름을 닉네임에 저장
+                    .providerId(providerId)
+                    .nickname(name)
                     .phoneNumber(phoneNumber)
                     .email(email)
                     .provider(Provider.valueOf(provider))
+                    .role(Role.STUDENT)  // OAuth로 가입한 사용자에게 기본 권한 부여 (필요 시 변경)
                     .build();
 
             oAuth2UserMapper.insertOAuthUser(newUser);
             existingUser = newUser;  // 이후 처리 위해 변수 업데이트
         }
-        String accessToken = tokenProviderService.generateToken(existingUser,  Duration.ofHours(2));
-        String refreshToken = tokenProviderService.generateToken(existingUser, Duration.ofDays(2));
+
+        // ✅ TokenRequestDTO 생성
+        TokenRequestDTO tokenRequestDTO = TokenRequestDTO.builder()
+                .email(existingUser.getEmail())
+                .nickname(existingUser.getNickname())
+                .role(existingUser.getRole())
+                .build();
+
+        // ✅ 토큰 발급
+        String accessToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofHours(2));
+        String refreshToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofDays(2));
 
         return new CustomOAuth2User(existingUser, accessToken, refreshToken);
     }
-
 }
