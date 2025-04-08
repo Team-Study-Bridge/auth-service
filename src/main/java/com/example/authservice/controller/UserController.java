@@ -28,8 +28,8 @@ public class UserController {
     }
 
     @DeleteMapping("/logout")
-    public UserLoginResponseDTO logout(HttpServletRequest request, HttpServletResponse response) {
-        return userService.logout(request, response);
+    public UserLoginResponseDTO logout(@RequestBody String accessToken, HttpServletRequest request, HttpServletResponse response) {
+        return userService.logout(accessToken, request, response);
     }
 
 

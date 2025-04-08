@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 @Setter
 @Builder
 public class EmailVerification {
-
     private Long id;
     private String email;
     private String code;

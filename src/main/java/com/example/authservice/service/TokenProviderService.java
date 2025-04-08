@@ -1,8 +1,8 @@
 package com.example.authservice.service;
 
 import com.example.authservice.config.jwt.JwtProperties;
+import com.example.authservice.dto.ClaimsRequestDTO;
 import com.example.authservice.dto.ClaimsResponseDTO;
-import com.example.authservice.dto.TokenRequestDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -25,7 +25,7 @@ public class TokenProviderService {
 
     private final JwtProperties jwtProperties;
 
-    public String generateToken(TokenRequestDTO tokenRequestDTO, Duration expiration) {
+    public String generateToken(ClaimsRequestDTO claimsRequestDTO, Duration expiration) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expiration.toMillis());
 
@@ -34,8 +34,8 @@ public class TokenProviderService {
                 .setIssuer(jwtProperties.getIssuer())
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
-                .claim("nickname", tokenRequestDTO.getNickname())
-                .claim("profileImage", tokenRequestDTO.getProfileImage())
+                .claim("nickname", claimsRequestDTO.getNickname())
+                .claim("profileImage", claimsRequestDTO.getProfileImage() != null ? claimsRequestDTO.getProfileImage() : null)
                 .signWith(getSecretKey(), HS512)
                 .compact();
     }

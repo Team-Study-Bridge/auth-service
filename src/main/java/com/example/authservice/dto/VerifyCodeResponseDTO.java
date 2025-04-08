@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ClaimsRequestDTO {
-    private String nickname;
-    private String profileImage;
+public class VerifyCodeResponseDTO {
+    private Boolean success;
+    private String message;
 }

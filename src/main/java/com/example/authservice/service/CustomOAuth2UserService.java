@@ -1,6 +1,8 @@
 package com.example.authservice.service;
 
 import com.example.authservice.config.security.CustomOAuth2User;
+import com.example.authservice.dto.ClaimsRequestDTO;
+import com.example.authservice.dto.NaverUserLoginRequestDTO;
 import com.example.authservice.dto.TokenRequestDTO;
 import com.example.authservice.mapper.OAuth2UserMapper;
 import com.example.authservice.model.User;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +30,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        Map<String, Object> response = (Map<String, Object>) oAuth2User.getAttributes().get("response");
-        String providerId = (String) response.get("providerId");
-        String email = (String) response.get("email");
-        String name = (String) response.get("name");
-        String phoneNumber = (String) response.get("phoneNumber");
-        String provider = (String) response.get("provider");
+//        NaverUserLoginRequestDTO.builder()
+//                .providerId(userRequest.getClientRegistration().getRegistrationId())
+//                .name(userRequest.getClientRegistration().getClientName())
+//                .phoneNumber()
+//                .email()
+//                .name(oAuth2User.getName())
+//                .build();
 
         User existingUser = oAuth2UserMapper.findByUserIdAndProvider(providerId, Provider.valueOf(provider).name());
 
@@ -50,11 +54,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             existingUser = newUser;  // 이후 처리 위해 변수 업데이트
         }
 
-        // ✅ TokenRequestDTO 생성
-        TokenRequestDTO tokenRequestDTO = TokenRequestDTO.builder()
-                .email(existingUser.getEmail())
+        ClaimsRequestDTO claimsRequestDTO = ClaimsRequestDTO.builder()
                 .nickname(existingUser.getNickname())
-                .role(existingUser.getRole())
+                .profileImage(existingUser.getProfileImage())
                 .build();
 
         // ✅ 토큰 발급

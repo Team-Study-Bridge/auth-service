@@ -11,7 +11,7 @@ public interface UserMapper {
 
     User findByEmail(@Param("email") String email);
 
-    void updateNickname(@Param("nickname") String nickname);
+    void updateNickname(@Param("id") Long id, @Param("nickname") String nickname);
 
     void deleteUserById(Long id);
 

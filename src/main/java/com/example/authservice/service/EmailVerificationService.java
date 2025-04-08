@@ -1,6 +1,7 @@
 package com.example.authservice.service;
 
 import com.example.authservice.dto.SendCodeResponseDTO;
+import com.example.authservice.dto.VerifyCodeResponseDTO;
 import com.example.authservice.mapper.EmailVerificationMapper;
 import com.example.authservice.model.EmailVerification;
 import jakarta.mail.MessagingException;
@@ -66,16 +67,22 @@ public class EmailVerificationService {
         }
     }
 
-    public boolean verifyCode(String email, String code) {
+    public VerifyCodeResponseDTO verifyCode(String email, String code) {
         EmailVerification verification = emailVerificationMapper.findByEmailAndCode(email, code);
 
         if (verification != null && !verification.isVerified()) {
             verification.setVerified(true);  // 인증 완료 처리
 
             emailVerificationMapper.updateEmailVerification(verification);
-            return true;
+            return VerifyCodeResponseDTO.builder()
+                    .success(true)
+                    .message("인증이 완료되었습니다.")
+                    .build();
         }
-        return false;
+        return VerifyCodeResponseDTO.builder()
+                .success(false)
+                .message("코드가 일치하지 않습니다.")
+                .build();
     }
 
     public boolean isVerified(String email) {

@@ -2,7 +2,7 @@ package com.example.authservice.controller;
 
 import com.example.authservice.dto.NicknameUpdateRequestDTO;
 import com.example.authservice.dto.NicknameUpdateResponseDTO;
-import com.example.authservice.service.UserService;
+import com.example.authservice.service.UserApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserApiController {
 
-    private final UserService userService;
+    private final UserApiService userApiService;
 
     @PutMapping("/nickname")
-    public NicknameUpdateResponseDTO updateNickname(@RequestBody NicknameUpdateRequestDTO requestDTO) {
-        return userService.updateNickname(requestDTO.getNickname());
+    public NicknameUpdateResponseDTO updateNickname(@RequestBody NicknameUpdateRequestDTO nicknameUpdateRequestDTO, String accessToken) {
+        return userApiService.updateNickname(nicknameUpdateRequestDTO.getNickname(), accessToken);
     }
 
 }

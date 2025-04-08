@@ -41,7 +41,7 @@
     <update id="updateNickname" parameterType="User" >
         UPDATE users
         SET nickname = #{nickname}
-        WHERE
+        WHERE id = #{id}
     </update>
 
     <!-- 이메일로 사용자 조회 -->

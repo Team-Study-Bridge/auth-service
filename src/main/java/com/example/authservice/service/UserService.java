@@ -3,7 +3,6 @@ package com.example.authservice.service;
 import com.example.authservice.dto.*;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
-import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
 import com.example.authservice.util.Validator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final TokenProviderService tokenProviderService;
-    private final BadWordFilter badWordFilter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
     private final EmailVerificationService emailVerificationService;
@@ -56,16 +54,16 @@ public class UserService {
             userMapper.insertUser(user);
             Long id = user.getId();
 
-            TokenRequestDTO tokenRequestDTO = TokenRequestDTO.builder()
+            ClaimsRequestDTO claimsRequestDTO = ClaimsRequestDTO.builder()
                     .nickname(user.getNickname())
                     .profileImage(user.getProfileImage())
                     .build();
 
-            String accessToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofHours(2));
-            String refreshToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofDays(7));
+            String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
+            String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
-            redisTemplate.opsForValue().set("accessToken:" + id, accessToken, Duration.ofHours(2));
-            redisTemplate.opsForValue().set("refreshToken:" + id, refreshToken, Duration.ofDays(7));
+            redisTemplate.opsForValue().set("accessToken:" + accessToken, String.valueOf(id), Duration.ofHours(2));
+            redisTemplate.opsForValue().set("refreshToken:" + refreshToken, String.valueOf(id), Duration.ofDays(7));
 
             CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
 
@@ -103,15 +101,16 @@ public class UserService {
         }
 
         //  로그인 성공 - JWT 토큰 발급 (Redis에 저장할 userId 포함)
-        TokenRequestDTO tokenRequestDTO = TokenRequestDTO.builder()
+        ClaimsRequestDTO claimsRequestDTO = ClaimsRequestDTO.builder()
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
                 .build();
 
-        String accessToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofHours(2));
-        String refreshToken = tokenProviderService.generateToken(tokenRequestDTO, Duration.ofDays(2));
+        String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
+        String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(2));
 
-        redisTemplate.opsForValue().set(accessToken, user.getId().toString(), Duration.ofHours(2));
+        redisTemplate.opsForValue().set("accessToken:" + accessToken, String.valueOf(user.getId()), Duration.ofHours(2));
+        redisTemplate.opsForValue().set("refreshToken:" + refreshToken, String.valueOf(user.getId()), Duration.ofDays(7));
 
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
 
@@ -122,39 +121,33 @@ public class UserService {
                 .build();
     }
 
-    public UserLoginResponseDTO logout(HttpServletRequest request, HttpServletResponse response) {
+    public UserLoginResponseDTO logout(String accessToken, HttpServletRequest request, HttpServletResponse response) {
+        // 쿠키에서 refreshToken 가져오기
+        String refreshToken = CookieUtil.getCookieValue(request, "refreshToken");
+
+        if (refreshToken == null) {
+            return UserLoginResponseDTO.builder()
+                    .loggedIn(false)
+                    .message("로그아웃 되었습니다.")
+                    .build();
+        }
+
+        // Redis에서 accessToken과 refreshToken 삭제하기
+        redisTemplate.delete("accessToken:" + accessToken);
+        redisTemplate.delete("refreshToken:" + refreshToken);
+
         CookieUtil.deleteCookie(request, response, "refreshToken");
-        if(CookieUtil.getCookieValue(request,"refreshToken")!=null) {
+
+        if (CookieUtil.getCookieValue(request, "refreshToken") != null) {
             return UserLoginResponseDTO.builder()
                     .loggedIn(true)
-                    .message("로그아웃에 실패하였습니다.")
+                    .message("로그아웃에 실패하였습니다. (쿠키 삭제 실패)")
                     .build();
         }
+
         return UserLoginResponseDTO.builder()
                 .loggedIn(false)
-                .message("정상적으로 로그아웃 처리 되었습니다.")
+                .message("정상적으로 로그아웃 되었습니다.")
                 .build();
-    }
-
-    public NicknameUpdateResponseDTO updateNickname(String nickname) {
-        if (badWordFilter.containsBadWord(nickname)) {
-            return NicknameUpdateResponseDTO.builder()
-                    .success(false)
-                    .message("사용하실 수 없는 닉네임입니다.")
-                    .build();
-        }
-
-        try {
-            userMapper.updateNickname(nickname);
-            return NicknameUpdateResponseDTO.builder()
-                    .success(true)
-                    .message("닉네임이 성공적으로 변경되었습니다.")
-                    .build();
-        } catch (Exception e) {
-            return NicknameUpdateResponseDTO.builder()
-                    .success(false)
-                    .message("닉네임 변경 중 오류가 발생했습니다.")
-                    .build();
-        }
     }
 }
