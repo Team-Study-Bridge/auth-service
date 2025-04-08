@@ -15,7 +15,7 @@ import java.time.Duration;
 public class TokenService {
 
     private final TokenProviderService tokenProviderService;
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
 

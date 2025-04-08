@@ -1,9 +1,6 @@
 package com.example.authservice.controller;
 
-import com.example.authservice.dto.UserJoinRequestDTO;
-import com.example.authservice.dto.UserJoinResponseDTO;
-import com.example.authservice.dto.UserLoginRequestDTO;
-import com.example.authservice.dto.UserLoginResponseDTO;
+import com.example.authservice.dto.*;
 import com.example.authservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,9 +25,8 @@ public class UserController {
     }
 
     @DeleteMapping("/logout")
-    public UserLoginResponseDTO logout(@RequestBody String accessToken, HttpServletRequest request, HttpServletResponse response) {
-        return userService.logout(accessToken, request, response);
+    public UserLoginResponseDTO logout(@RequestBody UserLogoutRequestDTO userLogoutRequestDTO, HttpServletRequest request, HttpServletResponse response) {
+        return userService.logout(userLogoutRequestDTO.getAccessToken(), request, response);
     }
-
 
 }

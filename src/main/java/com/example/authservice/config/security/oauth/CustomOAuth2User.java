@@ -1,4 +1,4 @@
-package com.example.authservice.config.security;
+package com.example.authservice.config.security.oauth;
 
 import com.example.authservice.model.User;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())); // Role 정보 사용
+        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override

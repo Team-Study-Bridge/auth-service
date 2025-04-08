@@ -1,6 +1,6 @@
 package com.example.authservice.controller;
 
-import com.example.authservice.config.security.CustomOAuth2User;
+import com.example.authservice.config.security.oauth.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

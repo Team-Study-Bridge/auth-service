@@ -44,6 +44,11 @@
         WHERE id = #{id}
     </update>
 
+    <select id="findEmailByEmail" parameterType="String" resultMap="userResultMap">
+        SELECT email
+        FROM users WHERE email = #{email}
+    </select>
+
     <!-- 이메일로 사용자 조회 -->
     <select id="findByEmail" parameterType="String" resultMap="userResultMap">
         SELECT *

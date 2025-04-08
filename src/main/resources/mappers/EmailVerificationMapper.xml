@@ -17,10 +17,14 @@
         FROM email_verification WHERE email = #{email}
     </select>
 
-    <!-- 이메일과 코드로 인증 정보 검색 -->
-    <select id="findByEmailAndCode" parameterType="map" resultType="com.example.authservice.model.EmailVerification">
-        SELECT * FROM email_verification WHERE email = #{email} AND code = #{code}
-    </select>
+
+    <update id="updateEmailCode" parameterType="com.example.authservice.model.EmailVerification">
+        UPDATE email_verification
+        SET code = #{code},
+            is_verified = #{isVerified},
+            created_at = #{createdAt}
+        WHERE email = #{email}
+    </update>
 
     <!-- 인증 정보 업데이트 (isVerified 업데이트) -->
     <update id="updateEmailVerification" parameterType="com.example.authservice.model.EmailVerification">
@@ -28,4 +32,9 @@
         SET is_verified = #{isVerified}
         WHERE email = #{email} AND code = #{code}
     </update>
+
+    <delete id="deleteByEmail" parameterType="string">
+        DELETE FROM email_verification
+        WHERE email = #{email}
+    </delete>
 </mapper>

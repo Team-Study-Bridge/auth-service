@@ -23,7 +23,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final TokenProviderService tokenProviderService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final EmailVerificationService emailVerificationService;
 
     public UserJoinResponseDTO save(UserJoinRequestDTO userJoinRequestDTO, HttpServletResponse response) {
@@ -36,7 +36,7 @@ public class UserService {
         if (!validationResult.isSuccess()) {
             return UserJoinResponseDTO.builder()
                     .success(false)
-                    .message("검증 실패")
+                    .message("패스워드 또는 닉네임설정이 잘못됐습니다.")
                     .errors(validationResult)
                     .build();
         }
@@ -66,6 +66,7 @@ public class UserService {
             redisTemplate.opsForValue().set("refreshToken:" + refreshToken, String.valueOf(id), Duration.ofDays(7));
 
             CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
+            emailVerificationService.deleteEmailVerification(user.getEmail());
 
             return UserJoinResponseDTO.builder()
                     .success(true)
@@ -132,7 +133,6 @@ public class UserService {
                     .build();
         }
 
-        // Redis에서 accessToken과 refreshToken 삭제하기
         redisTemplate.delete("accessToken:" + accessToken);
         redisTemplate.delete("refreshToken:" + refreshToken);
 
