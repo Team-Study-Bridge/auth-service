@@ -33,7 +33,7 @@
 
 
     <!-- 사용자 등록 -->
-    <insert id="insertUser" useGeneratedKeys="true" parameterType="User">
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="User">
         INSERT INTO users (email, password, nickname, role, provider, status)
         VALUES (#{email}, #{password}, #{nickname}, #{role}, #{provider}, #{status})
     </insert>
@@ -44,7 +44,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="findEmailByEmail" parameterType="String" resultMap="userResultMap">
+    <select id="findEmailByEmail" parameterType="String" resultType="String">
         SELECT email
         FROM users WHERE email = #{email}
     </select>
@@ -55,17 +55,35 @@
         FROM users WHERE email = #{email}
     </select>
 
+    <select id="findById" parameterType="Long" resultMap="userResultMap">
+        SELECT *
+        FROM users
+        WHERE id = #{id}
+    </select>
+
     <!-- 사용자 정보 수정 -->
-    <update id="updateUser" parameterType="User">
+<!--    <update id="updateUser" parameterType="User">-->
+<!--        UPDATE users-->
+<!--        SET password = #{password},-->
+<!--            nickname = #{nickname},-->
+<!--            provider = #{provider},-->
+<!--            provider_id = #{providerId},-->
+<!--            profile_image = #{profileImage},-->
+<!--            status = #{status},-->
+<!--            last_login = #{lastLogin},-->
+<!--            is_verified = #{isVerified}-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+    <select id="findStatusById" parameterType="Long" resultType="com.example.authservice.type.Status">
+        SELECT status
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <update id="updatePassword" parameterType="map">
         UPDATE users
-        SET password = #{password},
-            nickname = #{nickname},
-            provider = #{provider},
-            provider_id = #{providerId},
-            profile_image = #{profileImage},
-            status = #{status},
-            last_login = #{lastLogin},
-            is_verified = #{isVerified}
+        SET password = #{password}
         WHERE id = #{id}
     </update>
 
@@ -73,5 +91,11 @@
     <delete id="deleteUserById" parameterType="Long">
         DELETE FROM users WHERE id = #{id}
     </delete>
+
+    <update id="deactivateUser" parameterType="Long">
+        UPDATE users
+        SET status = 'INACTIVE'
+        WHERE id = #{id}
+    </update>
 
 </mapper>

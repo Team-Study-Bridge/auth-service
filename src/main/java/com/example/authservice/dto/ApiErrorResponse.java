@@ -5,10 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserJoinResponseDTO {
+public class ApiErrorResponse {
     private boolean success;
-    private String accessToken;
     private int code;
-    private ValidationResultDTO errors;
     private String message;
 }

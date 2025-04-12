@@ -5,6 +5,7 @@ import com.example.authservice.dto.SendCodeResponseDTO;
 import com.example.authservice.dto.VerifyCodeResponseDTO;
 import com.example.authservice.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +16,12 @@ public class EmailVerificationController {
     private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/send-code")
-    public SendCodeResponseDTO sendVerificationCode(@RequestBody EmailRequestDTO emailRequestDTO) {
+    public ResponseEntity<SendCodeResponseDTO> sendVerificationCode(@RequestBody EmailRequestDTO emailRequestDTO) {
         return emailVerificationService.sendVerificationCode(emailRequestDTO.getEmail());
     }
 
     @PostMapping("/verify-code")
-    public VerifyCodeResponseDTO verifyCode(@RequestBody EmailRequestDTO emailRequestDTO) {
+    public ResponseEntity<VerifyCodeResponseDTO> verifyCode(@RequestBody EmailRequestDTO emailRequestDTO) {
         return emailVerificationService.verifyCode(emailRequestDTO.getEmail(), emailRequestDTO.getCode());
     }
 }

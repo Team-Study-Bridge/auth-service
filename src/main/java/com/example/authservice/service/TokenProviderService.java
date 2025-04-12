@@ -34,6 +34,7 @@ public class TokenProviderService {
                 .setIssuer(jwtProperties.getIssuer())
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
+                .setSubject(String.valueOf(claimsRequestDTO.getUserId()))
                 .claim("nickname", claimsRequestDTO.getNickname())
                 .claim("profileImage", claimsRequestDTO.getProfileImage() != null ? claimsRequestDTO.getProfileImage() : null)
                 .signWith(getSecretKey(), HS512)
@@ -55,6 +56,7 @@ public class TokenProviderService {
         Claims claims = getClaims(token);
 
         return ClaimsResponseDTO.builder()
+                .id(Long.valueOf(claims.getSubject()))
                 .nickname(claims.get("nickname", String.class))
                 .profileImage(claims.get("profileImage", String.class))
                 .build();

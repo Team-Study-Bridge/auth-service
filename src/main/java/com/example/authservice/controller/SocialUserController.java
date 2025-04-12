@@ -20,7 +20,6 @@ public class SocialUserController {
         if (customOAuth2User == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
         }
-
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "token", customOAuth2User.getJwtToken(),

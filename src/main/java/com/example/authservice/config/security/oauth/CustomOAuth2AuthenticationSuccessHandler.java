@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    // ObjectMapper는 DI 받거나 new 로 생성할 수 있음.
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -21,6 +20,11 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
         String refreshToken = oauthUser.getRefreshToken();
         String accessToken = oauthUser.getJwtToken();
+        System.out.println("accessToken: " + accessToken);
+        System.out.println("refreshToken: " + refreshToken);
+        System.out.println("username: " + authentication.getName());
+        System.out.println("email: " + authentication.getPrincipal());
+        System.out.println("authorities: " + authentication.getAuthorities());
 
         // refreshToken 쿠키에 저장 (유효기간 7일)
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);

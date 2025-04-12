@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -17,10 +18,10 @@ public class TokenController {
     private final TokenService tokenService;
 
     @PostMapping("/refresh")
-    public RefreshTokenResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO,
-                                                HttpServletRequest request,
-                                                HttpServletResponse response) {
-        return tokenService.refreshToken(refreshTokenRequestDTO.getRefreshToken(),response,request);
+    public ResponseEntity<RefreshTokenResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO,
+                                                               HttpServletRequest request,
+                                                               HttpServletResponse response) {
+        return tokenService.refreshToken(refreshTokenRequestDTO.getAccessToken(),response,request);
     }
 
     @PostMapping("/validToken")

@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ClaimsRequestDTO {
+    private Long userId;
     private String nickname;
     private String profileImage;
 }

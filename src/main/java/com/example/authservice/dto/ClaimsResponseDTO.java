@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ClaimsResponseDTO {
+    private Long id;
     private String nickname;
     private String profileImage;
 }

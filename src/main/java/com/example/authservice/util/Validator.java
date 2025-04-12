@@ -2,12 +2,10 @@ package com.example.authservice.util;
 
 import com.example.authservice.dto.ValidationResultDTO;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.regex.Pattern;
 
 @Getter
-@RequiredArgsConstructor
 public class Validator {
 
     private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
@@ -15,6 +13,10 @@ public class Validator {
 
     public static boolean validateNickname(String nickname) {
         return Pattern.matches(NICKNAME_PATTERN, nickname);
+    }
+
+    public static boolean validatePassword(String newPassword) {
+        return Pattern.matches(PASSWORD_PATTERN, newPassword);
     }
 
     public static ValidationResultDTO validateUserInput(String password, String nickname) {
@@ -39,4 +41,5 @@ public class Validator {
             return ValidationResultDTO.failure(passwordError, nicknameError);
         }
     }
+
 }

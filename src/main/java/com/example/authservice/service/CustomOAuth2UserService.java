@@ -32,10 +32,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 기본 사용자 정보 로딩
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId(); // ex: "naver"
-
+        System.out.println("provider: " + provider);
+        System.out.println(userRequest.getClientRegistration().getRegistrationId());
+        System.out.println("load실행");
         if ("naver".equalsIgnoreCase(provider)) {
             // DTO로 변환 (네이버 응답은 "response"라는 키 아래에 실제 유저 정보가 들어있음)
             NaverUserResponseDTO naverUser;
+
+            System.out.println("naver");
             try {
                 Object responseData = oAuth2User.getAttributes().get("response");
                 naverUser = objectMapper.convertValue(responseData, NaverUserResponseDTO.class);
@@ -76,8 +80,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
             // Redis에 토큰 저장
-            redisTemplate.opsForValue().set("accessToken:" + accessToken, String.valueOf(existingUser.getId()), Duration.ofHours(2));
-            redisTemplate.opsForValue().set("refreshToken:" + refreshToken, String.valueOf(existingUser.getId()), Duration.ofDays(7));
+            redisTemplate.opsForValue().set("accessToken:" + accessToken, existingUser.getId(), Duration.ofHours(2));
+            redisTemplate.opsForValue().set("refreshToken:" + refreshToken, existingUser.getId(), Duration.ofDays(7));
 
             // 쿠키 저장 로직은 현재 Service 계층에서는 Response 객체를 다룰 수 없으므로,
             // 별도의 OAuth2 인증 성공 후처리 핸들러(AuthenticationSuccessHandler) 또는 Filter에서 처리하도록 구성한다.
