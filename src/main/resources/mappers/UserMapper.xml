@@ -94,7 +94,8 @@
 
     <update id="deactivateUser" parameterType="Long">
         UPDATE users
-        SET status = 'INACTIVE'
+        SET status = 'INACTIVE',
+            status_changed_at = NOW()
         WHERE id = #{id}
     </update>
 

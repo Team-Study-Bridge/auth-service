@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class Validator {
 
     private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
-    private static final String NICKNAME_PATTERN = "^[a-zA-Z0-9가-힣]{2,20}$";
+    private static final String NICKNAME_PATTERN = "^[a-zA-Z0-9가-힣]{2,10}$";
 
     public static boolean validateNickname(String nickname) {
         return Pattern.matches(NICKNAME_PATTERN, nickname);
@@ -32,7 +32,7 @@ public class Validator {
 
         if (!Pattern.matches(NICKNAME_PATTERN, nickname)) {
             success = false;
-            nicknameError = "닉네임은 2~20자이며, 공백이나 특수문자를 포함할 수 없습니다.";
+            nicknameError = "닉네임은 2~10자이며, 공백이나 특수문자를 포함할 수 없습니다.";
         }
 
         if (success) {

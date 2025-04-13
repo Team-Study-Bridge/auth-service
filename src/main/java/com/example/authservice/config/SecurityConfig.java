@@ -45,6 +45,8 @@ public class SecurityConfig {
                         // 인증 없이 접근 허용하는 URL 설정
                         .requestMatchers("/auths/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/**").permitAll()
                         // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 )

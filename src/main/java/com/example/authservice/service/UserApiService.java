@@ -49,7 +49,7 @@ public class UserApiService {
         if (!Validator.validateNickname(nickname)) {
             return NicknameUpdateResponseDTO.builder()
                     .success(false)
-                    .message("닉네임은 2~20자이며, 공백이나 특수문자를 포함할 수 없습니다.")
+                    .message("닉네임은 2~10자이며, 공백이나 특수문자를 포함할 수 없습니다.")
                     .build();
         }
         if (badWordFilter.containsBadWord(nickname)) {

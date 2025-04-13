@@ -4,12 +4,14 @@ import com.example.authservice.model.User;
 import com.example.authservice.type.Provider;
 import com.example.authservice.type.Role;
 import com.example.authservice.type.Status;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Getter
 @ToString
+@Builder
 public class UserJoinRequestDTO {
     private String email;
     private String password;

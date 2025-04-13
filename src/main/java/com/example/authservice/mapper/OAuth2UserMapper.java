@@ -11,4 +11,6 @@ public interface OAuth2UserMapper {
     void insertOAuthUser(User newUser);
 
     User findByUserIdAndProvider(@Param("providerId") String providerId, @Param("provider") Provider provider);
+
+    void updateUserWithSocialInfo(Long id, String providerId, Provider provider);
 }

@@ -39,7 +39,7 @@ public class UserService {
 
         String userEmail = userMapper.findEmailByEmail(userJoinRequestDTO.getEmail());
         if (userEmail != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
                     UserJoinResponseDTO.builder()
                             .success(false)
                             .message("이미 가입된 이메일입니다.")
@@ -58,7 +58,7 @@ public class UserService {
         }
 
         if (badWordFilter.containsBadWord(userJoinRequestDTO.getNickname())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
                     UserJoinResponseDTO.builder()
                             .success(false)
                             .message("사용할 수 없는 닉네임입니다.")

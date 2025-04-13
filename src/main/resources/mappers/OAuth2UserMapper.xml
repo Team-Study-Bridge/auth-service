@@ -25,14 +25,20 @@
             resultMap="userResultMap">
         SELECT *
         FROM users
-        WHERE provider_id = #{providerId} AND provider = #{provider};
+        WHERE provider_id = #{providerId} AND provider = #{provider}
     </select>
 
 
     <insert id="insertOAuthUser" useGeneratedKeys="true" parameterType="User">
-        INSERT INTO users (provider_id, nickname, phone_number, email, provider)
-        VALUES (#{providerId}, #{nickname}, #{phoneNumber}, #{email}, #{provider};
+        INSERT INTO users (provider_id, nickname, email, provider)
+        VALUES (#{providerId}, #{nickname}, #{email}, #{provider})
     </insert>
+
+    <update id="updateUserWithSocialInfo">
+        UPDATE users
+        SET provider_id = #{providerId}, provider = #{provider}
+        WHERE id = #{id}
+    </update>
 
 </mapper>
 

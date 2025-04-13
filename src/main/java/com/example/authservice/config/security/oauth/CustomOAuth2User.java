@@ -14,6 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
+    private boolean needsLinking = false;
     private final User user;
     private final String jwtToken;
     private final String refreshToken;
@@ -45,5 +46,17 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public String getName() {
         return user.getEmail();
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public boolean isNeedsLinking() {
+        return needsLinking;
+    }
+
+    public void setNeedsLinking(boolean needsLinking) {
+        this.needsLinking = needsLinking;
     }
 }
