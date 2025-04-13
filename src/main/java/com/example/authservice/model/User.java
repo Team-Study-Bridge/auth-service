@@ -6,10 +6,12 @@ import com.example.authservice.type.Status;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 
 @Getter
+@Setter
 @Builder
 public class User {
     private Long id;

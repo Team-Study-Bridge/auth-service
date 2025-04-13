@@ -32,13 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환용
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String token = extractToken(request);
-
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
@@ -46,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 1. JWT 유효성 검사
         int result = tokenProviderService.validateToken(token);
-
         if (result == 3) {
             setErrorResponse(response, 40103, "비정상적인 접근입니다.");
             return;
@@ -57,15 +56,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        Long userId = tokenProviderService.getAuthentication(token).getId();
-        String savedToken = String.valueOf(redisTemplate.opsForValue().get(userId.toString()));
-        Status status = userMapper.findStatusById(userId);
+        // 2. Claims 추출 (한 번만 호출)
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(token);
+        Long userId = claims.getId();
 
-        if (status != Status.ACTIVE) {
-            setErrorResponse(response, 40301, "비활성화된 계정입니다. 관리자에게 문의하세요.");
-            return;
-        }
-
+        // 3. Redis에 저장된 토큰과 비교
+        String savedToken = String.valueOf(redisTemplate.opsForValue().get("accessToken:" + userId));
         if (savedToken == null) {
             setErrorResponse(response, 40102, "토큰이 만료되었습니다.");
             return;
@@ -76,9 +72,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 4. 인증 객체 등록
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(token);
+        // 4. 계정 상태 확인
+        Status status = userMapper.findStatusById(userId);
+        if (status != Status.ACTIVE) {
+            setErrorResponse(response, 40301, "비활성화된 계정입니다. 관리자에게 문의하세요.");
+            return;
+        }
 
+        // 5. 인증 객체 등록
         CustomOAuth2User customUser = new CustomOAuth2User(
                 User.builder()
                         .id(userId)
@@ -114,7 +115,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .message(message)
                 .build();
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401로 고정
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }

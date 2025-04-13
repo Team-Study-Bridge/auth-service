@@ -5,6 +5,7 @@ import com.example.authservice.dto.ClaimsRequestDTO;
 import com.example.authservice.dto.OAuthUserInfoResponseDTO;
 import com.example.authservice.mapper.OAuth2UserMapper;
 import com.example.authservice.model.User;
+import com.example.authservice.type.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class SocialUserService {
     public ResponseEntity<OAuthUserInfoResponseDTO> linkAccount(CustomOAuth2User customUser) {
         User user = customUser.getUser();
 
-        if (user.getProvider() != null) {
+        if (user.getProvider() != Provider.LOCAL) {
             return ResponseEntity.badRequest().body(
                     OAuthUserInfoResponseDTO.builder()
                             .success(false)
@@ -53,11 +54,12 @@ public class SocialUserService {
                             .build()
             );
         }
+        Provider provider = customUser.getProvider();
 
         oAuth2UserMapper.updateUserWithSocialInfo(
                 user.getId(),
                 user.getProviderId(),
-                user.getProvider()
+                provider
         );
 
         ClaimsRequestDTO claims = ClaimsRequestDTO.builder()
@@ -68,8 +70,8 @@ public class SocialUserService {
         String accessToken = tokenProviderService.generateToken(claims, Duration.ofHours(2));
         String refreshToken = tokenProviderService.generateToken(claims, Duration.ofDays(7));
 
-        redisTemplate.opsForValue().set("accessToken:" + accessToken, user.getId(), Duration.ofHours(2));
-        redisTemplate.opsForValue().set("refreshToken:" + refreshToken, user.getId(), Duration.ofDays(7));
+        redisTemplate.opsForValue().set("accessToken:" + user.getId(), accessToken, Duration.ofHours(2));
+        redisTemplate.opsForValue().set("refreshToken:" + user.getId(), refreshToken, Duration.ofDays(7));
 
         return ResponseEntity.ok(
                 OAuthUserInfoResponseDTO.builder()

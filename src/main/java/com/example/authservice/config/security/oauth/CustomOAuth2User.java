@@ -1,6 +1,7 @@
 package com.example.authservice.config.security.oauth;
 
 import com.example.authservice.model.User;
+import com.example.authservice.type.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -52,6 +53,15 @@ public class CustomOAuth2User implements OAuth2User {
         return user;
     }
 
+
+    public Provider getProvider() {
+        return user.getProvider();
+    }
+
+    public void setProvider(Provider provider) {
+        this.user.setProvider(provider);
+    }
+
     public boolean isNeedsLinking() {
         return needsLinking;
     }
@@ -59,4 +69,5 @@ public class CustomOAuth2User implements OAuth2User {
     public void setNeedsLinking(boolean needsLinking) {
         this.needsLinking = needsLinking;
     }
+
 }

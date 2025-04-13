@@ -68,7 +68,7 @@ public class TokenService {
         }
 
         // 4. Redis에서 저장된 refreshToken 확인
-        String savedRefreshToken = (String) redisTemplate.opsForValue().get("refresh:" + userId);
+        String savedRefreshToken = (String) redisTemplate.opsForValue().get("refreshToken:" + userId);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshTokenFromCookie)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                     RefreshTokenResponseDTO.builder()

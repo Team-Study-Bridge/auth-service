@@ -130,7 +130,7 @@ public class EmailVerificationService {
             mailSender.send(message);
         } catch (MessagingException e) {
             log.error("이메일 전송 중 오류 발생: {}", e.getMessage());
-            // 상황에 따라 예외를 던지거나 처리할 수 있음
+            throw new RuntimeException("이메일 전송 실패", e); // 🔥 여기 추가!!
         }
     }
 

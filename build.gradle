@@ -35,7 +35,7 @@ jacocoTestReport {
     classDirectories.setFrom(
             files(fileTree(
                     dir: "$buildDir/classes/java/main",
-                    includes: ['com/example/authservice/service/TokenProviderService.class'],
+                    includes: ['com/example/authservice/service/SocialUserService.class'],
                     excludes: ['**/config/**', '**/dto/**', '**/type/**', '**/controller/**', '**/handler/**', '**/util/**']
             ))
     )

@@ -5,6 +5,7 @@ import com.example.authservice.service.UserApiService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +19,12 @@ public class UserApiController {
     private final UserApiService userApiService;
 
     @PutMapping("/nickname")
-    public NicknameUpdateResponseDTO updateNickname(@RequestBody NicknameUpdateRequestDTO nicknameUpdateRequestDTO) {
+    public ResponseEntity<NicknameUpdateResponseDTO> updateNickname(@RequestBody NicknameUpdateRequestDTO nicknameUpdateRequestDTO) {
         return userApiService.updateNickname(nicknameUpdateRequestDTO.getAccessToken(), nicknameUpdateRequestDTO.getNickname());
     }
 
     @PutMapping("/password")
-    public PasswordUpdateResponseDTO updatePassword(@RequestBody PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
+    public ResponseEntity<PasswordUpdateResponseDTO> updatePassword(@RequestBody PasswordUpdateRequestDTO passwordUpdateRequestDTO) {
         return userApiService.updatePassword(
                 passwordUpdateRequestDTO.getAccessToken(),
                 passwordUpdateRequestDTO.getCurrentPassword(),
@@ -32,7 +33,7 @@ public class UserApiController {
     }
 
     @PutMapping("/delete")
-    public DeleteAccountResponseDTO deleteAccount(@RequestBody DeleteAccountRequestDTO deleteAccountRequestDTO,
+    public ResponseEntity<DeleteAccountResponseDTO> deleteAccount(@RequestBody DeleteAccountRequestDTO deleteAccountRequestDTO,
                                                   HttpServletRequest request, HttpServletResponse response) {
         return userApiService.deleteAccount(deleteAccountRequestDTO.getAccessToken(), request, response);
     }

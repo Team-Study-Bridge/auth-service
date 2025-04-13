@@ -78,8 +78,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
             String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
-            redisTemplate.opsForValue().set("accessToken:" + accessToken, existingUser.getId(), Duration.ofHours(2));
-            redisTemplate.opsForValue().set("refreshToken:" + refreshToken, existingUser.getId(), Duration.ofDays(7));
+            redisTemplate.opsForValue().set("accessToken:" + existingUser.getId(), accessToken,  Duration.ofHours(2));
+            redisTemplate.opsForValue().set("refreshToken:" + existingUser.getId(), refreshToken, Duration.ofDays(7));
 
             CustomOAuth2User customOAuth2User = new CustomOAuth2User(existingUser, accessToken, refreshToken);
             customOAuth2User.setNeedsLinking(needsLinking);
