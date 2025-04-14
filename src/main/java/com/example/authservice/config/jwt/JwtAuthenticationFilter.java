@@ -1,6 +1,6 @@
 package com.example.authservice.config.jwt;
 
-import com.example.authservice.dto.ApiErrorResponse;
+import com.example.authservice.dto.ApiErrorResponseDTO;
 import com.example.authservice.dto.ClaimsResponseDTO;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserMapper userMapper;
     private final TokenProviderService tokenProviderService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환용
 
 
@@ -102,14 +102,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
+        if (header == null) return null;
+
+        if (header.toLowerCase().startsWith("bearer ")) {
             return header.substring(7);
         }
-        return null;
+
+        return header;
     }
 
     private void setErrorResponse(HttpServletResponse response, int code, String message) throws IOException {
-        ApiErrorResponse errorResponse = ApiErrorResponse.builder()
+        ApiErrorResponseDTO errorResponse = ApiErrorResponseDTO.builder()
                 .success(false)
                 .code(code)
                 .message(message)

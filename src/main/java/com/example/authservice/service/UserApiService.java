@@ -1,9 +1,6 @@
 package com.example.authservice.service;
 
-import com.example.authservice.dto.ClaimsResponseDTO;
-import com.example.authservice.dto.DeleteAccountResponseDTO;
-import com.example.authservice.dto.NicknameUpdateResponseDTO;
-import com.example.authservice.dto.PasswordUpdateResponseDTO;
+import com.example.authservice.dto.*;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
 import com.example.authservice.util.BadWordFilter;
@@ -12,11 +9,14 @@ import com.example.authservice.util.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserApiService {
@@ -70,6 +70,7 @@ public class UserApiService {
                     NicknameUpdateResponseDTO.builder()
                             .success(true)
                             .message("닉네임이 성공적으로 변경되었습니다.")
+                            .nickname(nickname)
                             .build()
             );
         } catch (Exception e) {
@@ -184,5 +185,62 @@ public class UserApiService {
             );
         }
     }
-}
 
+    public ResponseEntity<ProfileImageUpdateResponseDTO> updateProfileImage(String accessToken,
+                                                                            MultipartFile profileImage) {
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+        Long userId = claims.getId();
+    }
+
+    public ResponseEntity<UserInfoResponseDTO> userInfo(String accessToken) {
+        try {
+            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+            Long userId = claims.getId();
+
+            String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
+            if (savedToken == null || !savedToken.equals(accessToken)) {
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
+                        UserInfoResponseDTO.builder()
+                                .success(false)
+                                .message("유효하지 않은 토큰입니다.")
+                                .build()
+                );
+            }
+
+            User user = userMapper.findById(userId);
+            if (user == null) {
+                return ResponseEntity.badRequest().body(
+                        UserInfoResponseDTO.builder()
+                                .success(false)
+                                .message("사용자 정보를 찾을 수 없습니다.")
+                                .build()
+                );
+            }
+
+            return ResponseEntity.ok(
+                    UserInfoResponseDTO.builder()
+                            .success(true)
+                            .message("사용자의 정보를 정상적으로 불러왔습니다.")
+                            .role(user.getRole())
+                            .email(user.getEmail())
+                            .phoneNumber(user.getPhoneNumber())
+                            .nickname(user.getNickname())
+                            .profileImage(user.getProfileImage())
+                            .provider(user.getProvider())
+                            .status(user.getStatus())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("유저 정보 조회 중 예외 발생", e);
+            return ResponseEntity.internalServerError().body(
+                    UserInfoResponseDTO.builder()
+                            .success(false)
+                            .message("서버 오류로 사용자 정보를 불러오지 못했습니다.")
+                            .build()
+            );
+        }
+    }
+
+
+}

@@ -3,6 +3,7 @@ package com.example.authservice.service;
 import com.example.authservice.dto.*;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
+import com.example.authservice.type.Status;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
 import com.example.authservice.util.Validator;
@@ -15,7 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 
 @Slf4j
@@ -26,11 +29,12 @@ public class UserService {
     private final UserMapper userMapper;
     private final TokenProviderService tokenProviderService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final EmailVerificationService emailVerificationService;
     private final BadWordFilter badWordFilter;
+    private final S3Service s3Service;
 
-    public ResponseEntity<UserJoinResponseDTO> save(UserJoinRequestDTO userJoinRequestDTO, HttpServletResponse response) {
+    public ResponseEntity<UserJoinResponseDTO> save(UserJoinRequestDTO userJoinRequestDTO, MultipartFile profileImage, HttpServletResponse response) {
 
         ValidationResultDTO validationResult = Validator.validateUserInput(
                 userJoinRequestDTO.getPassword(),
@@ -75,6 +79,22 @@ public class UserService {
             );
         }
 
+        String imageUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                imageUrl = s3Service.upload(profileImage, "profile");
+            } catch (IOException e) {
+                log.error("프로필 이미지 업로드 실패: {}", e.getMessage());
+                return ResponseEntity.internalServerError().body(
+                        UserJoinResponseDTO.builder()
+                                .success(false)
+                                .message("프로필 이미지 업로드에 실패했습니다.")
+                                .build()
+                );
+            }
+        }
+
+        userJoinRequestDTO.setProfileImage(imageUrl);
         User user = userJoinRequestDTO.toUser(bCryptPasswordEncoder);
 
         try {
@@ -127,8 +147,17 @@ public class UserService {
             );
         }
 
-        // 2. 기존 로그인 세션 감지
-        String existingAccessToken = (String) redisTemplate.opsForValue().get("accessToken:" + user.getId());
+        if (user.getStatus() != Status.ACTIVE) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    UserLoginResponseDTO.builder()
+                            .loggedIn(false)
+                            .message("활동 정지된 계정입니다.")
+                            .build()
+            );
+        }
+
+        // 기존 로그인 세션 감지
+        String existingAccessToken = redisTemplate.opsForValue().get("accessToken:" + user.getId());
         if (existingAccessToken != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(
                     UserLoginResponseDTO.builder()
@@ -138,7 +167,7 @@ public class UserService {
             );
         }
 
-        // 3. 토큰 생성
+
         ClaimsRequestDTO claimsRequestDTO = ClaimsRequestDTO.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
@@ -148,14 +177,11 @@ public class UserService {
         String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
         String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
-        // 4. Redis 저장
         redisTemplate.opsForValue().set("accessToken:" + user.getId(), accessToken, Duration.ofHours(2));
         redisTemplate.opsForValue().set("refreshToken:" + user.getId(), refreshToken, Duration.ofDays(7));
 
-        // 5. 쿠키 저장
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
 
-        // 6. 성공 응답
         return ResponseEntity.ok(
                 UserLoginResponseDTO.builder()
                         .loggedIn(true)
@@ -186,14 +212,11 @@ public class UserService {
         String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
         String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
-        // 4. Redis 저장
         redisTemplate.opsForValue().set("accessToken:" + user.getId(), accessToken, Duration.ofHours(2));
         redisTemplate.opsForValue().set("refreshToken:" + user.getId(), refreshToken, Duration.ofDays(7));
 
-        // 5. 쿠키 저장
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
 
-        // 6. 성공 응답
         return ResponseEntity.ok(
                 UserLoginResponseDTO.builder()
                         .loggedIn(true)

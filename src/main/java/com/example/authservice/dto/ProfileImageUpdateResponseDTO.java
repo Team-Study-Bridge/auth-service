@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ApiErrorResponse {
+public class ProfileImageUpdateResponseDTO {
     private boolean success;
-    private int code;
     private String message;
+    private String profileImage;
 }

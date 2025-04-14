@@ -6,10 +6,12 @@ import com.example.authservice.type.Role;
 import com.example.authservice.type.Status;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Getter
+@Setter
 @ToString
 @Builder
 public class UserJoinRequestDTO {

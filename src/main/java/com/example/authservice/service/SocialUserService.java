@@ -18,7 +18,7 @@ import java.time.Duration;
 public class SocialUserService {
     private final OAuth2UserMapper oAuth2UserMapper;
     private final TokenProviderService tokenProviderService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public ResponseEntity<OAuthUserInfoResponseDTO> getUserInfo(CustomOAuth2User customOAuth2User) {
         if (customOAuth2User == null) {

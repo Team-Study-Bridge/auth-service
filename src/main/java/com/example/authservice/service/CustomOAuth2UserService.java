@@ -26,9 +26,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final OAuth2UserMapper oAuth2UserMapper;
     private final TokenProviderService tokenProviderService;
     private final ObjectMapper objectMapper;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final UserMapper userMapper;
-
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {

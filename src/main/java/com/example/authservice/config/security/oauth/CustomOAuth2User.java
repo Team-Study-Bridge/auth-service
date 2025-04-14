@@ -58,10 +58,6 @@ public class CustomOAuth2User implements OAuth2User {
         return user.getProvider();
     }
 
-    public void setProvider(Provider provider) {
-        this.user.setProvider(provider);
-    }
-
     public boolean isNeedsLinking() {
         return needsLinking;
     }

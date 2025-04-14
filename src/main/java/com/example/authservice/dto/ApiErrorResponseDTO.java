@@ -5,9 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class TokenResponseDTO {
-    private String accessToken;
-    private String refreshToken;
+public class ApiErrorResponseDTO {
     private boolean success;
+    private int code;
     private String message;
 }

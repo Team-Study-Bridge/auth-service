@@ -7,5 +7,4 @@ import lombok.Setter;
 @Setter
 public class NicknameUpdateRequestDTO {
     private String nickname;
-    private String accessToken;
 }

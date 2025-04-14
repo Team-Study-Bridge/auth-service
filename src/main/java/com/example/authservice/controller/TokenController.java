@@ -1,6 +1,7 @@
 package com.example.authservice.controller;
 
-import com.example.authservice.dto.*;
+import com.example.authservice.dto.RefreshTokenResponseDTO;
+import com.example.authservice.dto.ValidTokenResponseDTO;
 import com.example.authservice.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,14 +19,14 @@ public class TokenController {
     private final TokenService tokenService;
 
     @PostMapping("/refresh")
-    public ResponseEntity<RefreshTokenResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO,
-                                                               HttpServletRequest request,
-                                                               HttpServletResponse response) {
-        return tokenService.refreshToken(refreshTokenRequestDTO.getAccessToken(),response,request);
+    public ResponseEntity<RefreshTokenResponseDTO> refreshToken(@RequestHeader("Authorization") String accessToken,
+                                                                HttpServletRequest request,
+                                                                HttpServletResponse response) {
+        return tokenService.refreshToken(accessToken, response, request);
     }
 
-    @PostMapping("/validToken")
-    public ValidTokenResponseDTO validToken(@RequestBody ValidTokenRequestDTO validTokenRequestDTO) {
-        return tokenService.validateToken(validTokenRequestDTO.getToken());
+    @PostMapping("/valid-token")
+    public ValidTokenResponseDTO validToken(@RequestHeader("Authorization") String accessToken) {
+        return tokenService.validateToken(accessToken);
     }
 }
