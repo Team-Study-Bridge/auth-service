@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class UserApiService {
     private final UserMapper userMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final S3Service s3Service;
 
     public ResponseEntity<NicknameUpdateResponseDTO> updateNickname(String accessToken, String nickname) {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
@@ -186,11 +189,73 @@ public class UserApiService {
         }
     }
 
-    public ResponseEntity<ProfileImageUpdateResponseDTO> updateProfileImage(String accessToken,
-                                                                            MultipartFile profileImage) {
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
-        Long userId = claims.getId();
+    public ResponseEntity<ProfileImageUpdateResponseDTO> updateProfileImage(
+            String accessToken,
+            MultipartFile profileImage
+    ) {
+        try {
+            // 1. 토큰 유효성 검사 및 유저 정보 추출
+            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+            Long userId = claims.getId();
+
+            String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
+            if (savedToken == null || !savedToken.equals(accessToken)) {
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
+                        ProfileImageUpdateResponseDTO.builder()
+                                .success(false)
+                                .message("유효하지 않은 액세스 토큰입니다.")
+                                .build()
+                );
+            }
+
+            // 2. 이미지 유효성 체크
+            if (profileImage == null || profileImage.isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        ProfileImageUpdateResponseDTO.builder()
+                                .success(false)
+                                .message("프로필 이미지가 비어 있습니다.")
+                                .build()
+                );
+            }
+
+            // 3. 이미지 업로드
+            String imageUrl;
+            try {
+                imageUrl = s3Service.upload(profileImage, "profile");
+            } catch (IOException e) {
+                log.error("프로필 이미지 업로드 실패", e);
+                return ResponseEntity.internalServerError().body(
+                        ProfileImageUpdateResponseDTO.builder()
+                                .success(false)
+                                .message("이미지 업로드 중 오류가 발생했습니다.")
+                                .build()
+                );
+            }
+
+            // 4. DB 업데이트
+            userMapper.updateProfileImage(userId, imageUrl);
+
+            // 5. 성공 응답
+            return ResponseEntity.ok(
+                    ProfileImageUpdateResponseDTO.builder()
+                            .success(true)
+                            .message("프로필 이미지가 성공적으로 업데이트되었습니다.")
+                            .profileImage(imageUrl)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("프로필 이미지 업데이트 전체 실패", e);
+            return ResponseEntity.internalServerError().body(
+                    ProfileImageUpdateResponseDTO.builder()
+                            .success(false)
+                            .message("서버 오류로 인해 이미지 업데이트에 실패했습니다.")
+                            .build()
+            );
+        }
     }
+
+
 
     public ResponseEntity<UserInfoResponseDTO> userInfo(String accessToken) {
         try {

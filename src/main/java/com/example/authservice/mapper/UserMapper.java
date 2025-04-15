@@ -1,6 +1,7 @@
 package com.example.authservice.mapper;
 
 import com.example.authservice.model.User;
+import com.example.authservice.type.Role;
 import com.example.authservice.type.Status;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -27,4 +28,8 @@ public interface UserMapper {
     void deleteUserById(Long userId);
 
     void deactivateUser(@Param("id") Long userId);
+
+    void updateProfileImage(@Param("id") Long id, @Param("profileImage") String profileImage);
+
+    Role isAdmin(@Param("id") Long userId);
 }

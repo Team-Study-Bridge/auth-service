@@ -20,11 +20,6 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
         String refreshToken = oauthUser.getRefreshToken();
         String accessToken = oauthUser.getJwtToken();
-        System.out.println("accessToken: " + accessToken);
-        System.out.println("refreshToken: " + refreshToken);
-        System.out.println("username: " + authentication.getName());
-        System.out.println("email: " + authentication.getPrincipal());
-        System.out.println("authorities: " + authentication.getAuthorities());
 
         // refreshToken 쿠키에 저장 (유효기간 7일)
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);

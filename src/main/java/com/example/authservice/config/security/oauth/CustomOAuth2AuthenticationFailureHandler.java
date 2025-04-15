@@ -25,13 +25,6 @@ public class CustomOAuth2AuthenticationFailureHandler implements AuthenticationF
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
 
-        System.out.println("username: " + exception.getMessage());
-        System.out.println("email: " + request.getRemoteAddr());
-        System.out.println("authorities: " + exception.getMessage());
-        System.out.println("refreshToken: " + request.getHeader("refreshToken"));
-        System.out.println("accessToken: " + request.getHeader("accessToken"));
-        System.out.println("authorities: " + exception.getMessage());
-        System.out.println("실패");
         // 실패 시 반환할 DTO 생성 (loggedIn은 false, accessToken은 null, 메시지에 실패 원인 포함)
         UserLoginResponseDTO errorResponse = UserLoginResponseDTO.builder()
                 .loggedIn(false)

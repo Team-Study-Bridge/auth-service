@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.authservice.mapper.TeacherMapper">
+
+    <resultMap id="TeacherResultMap" type="com.example.authservice.model.Teacher">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="bio" column="bio"/>
+        <result property="category" column="category"/>
+        <result property="profileImage" column="profile_image"/>
+        <result property="resumeFile" column="resume_file"/>
+        <result property="rating" column="rating"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="teacherStatus" column="teacher_status" typeHandler="com.example.authservice.type.handler.TeacherStatusTypeHandler"/>
+    </resultMap>
+
+    <!-- ✅ 강사 신청 여부 확인 -->
+    <select id="existsByUserId" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM teachers WHERE user_id = #{userId}
+        )
+    </select>
+
+    <!-- ✅ 관리자 목록 조회 (요약 정보) -->
+    <select id="findTeachersWithPaging" resultType="com.example.authservice.dto.TeacherSummaryDTO">
+        SELECT user_id, name, bio, teacher_status
+        FROM teachers
+        <where>
+            <if test="status != null">
+                teacher_status = #{teacherStatus}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- ✅ 전체 강사 수 (페이지 계산용) -->
+    <select id="countTeachers" resultType="int">
+        SELECT COUNT(*)
+        FROM teachers
+        <where>
+            <if test="status != null">
+                teacher_status = #{teacherStatus}
+            </if>
+        </where>
+    </select>
+
+    <!-- ✅ 상세 조회용 -->
+    <select id="findByUserId" resultMap="TeacherResultMap">
+        SELECT *
+        FROM teachers
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- ✅ 상태 업데이트 -->
+    <update id="updateTeacherStatus">
+        UPDATE teachers
+        SET teacher_status = #{teacherStatus}
+        WHERE user_id = #{userId}
+    </update>
+
+
+</mapper>

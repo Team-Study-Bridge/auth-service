@@ -61,19 +61,11 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 사용자 정보 수정 -->
-<!--    <update id="updateUser" parameterType="User">-->
-<!--        UPDATE users-->
-<!--        SET password = #{password},-->
-<!--            nickname = #{nickname},-->
-<!--            provider = #{provider},-->
-<!--            provider_id = #{providerId},-->
-<!--            profile_image = #{profileImage},-->
-<!--            status = #{status},-->
-<!--            last_login = #{lastLogin},-->
-<!--            is_verified = #{isVerified}-->
-<!--        WHERE id = #{id}-->
-<!--    </update>-->
+    <select id="isAdmin" resultType="com.example.authservice.type.Role" resultMap="userResultMap" >
+        SELECT role
+        FROM users
+        WHERE id = #{id}
+    </select>
 
     <select id="findStatusById" parameterType="Long" resultType="com.example.authservice.type.Status">
         SELECT status
@@ -96,6 +88,12 @@
         UPDATE users
         SET status = 'INACTIVE',
             status_changed_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateProfileImage">
+        UPDATE users
+        SET profile_image = #{profileImage}
         WHERE id = #{id}
     </update>
 

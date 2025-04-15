@@ -1,7 +1,9 @@
 package com.example.authservice.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,14 +21,11 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    /**
-     * S3에 파일 업로드 후 URL 반환
-     *
-     * @param file 업로드할 파일
-     * @param directory 저장할 S3 디렉터리 이름 (예: "profile")
-     * @return 업로드된 파일의 URL
-     */
     public String upload(MultipartFile file, String directory) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("빈 파일은 업로드할 수 없습니다.");
+        }
+
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
         String uniqueFileName = directory + "/" + UUID.randomUUID() + fileExtension;
@@ -35,7 +34,10 @@ public class S3Service {
         metadata.setContentType(file.getContentType());
         metadata.setContentLength(file.getSize());
 
-        amazonS3.putObject(bucket, uniqueFileName, file.getInputStream(), metadata);
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, uniqueFileName, file.getInputStream(), metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead); // ✅ 공개 접근
+
+        amazonS3.putObject(putObjectRequest);
 
         return amazonS3.getUrl(bucket, uniqueFileName).toString();
     }
