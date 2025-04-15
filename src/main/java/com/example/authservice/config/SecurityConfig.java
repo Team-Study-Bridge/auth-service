@@ -42,6 +42,13 @@ public class SecurityConfig {
                 // CORS 설정 적용
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         // 인증 없이 접근 허용하는 URL 설정
                         .requestMatchers("/auths/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
