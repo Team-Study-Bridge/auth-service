@@ -23,7 +23,6 @@ public class User {
     private String providerId;
     private String profileImage;
     private Status status;
-    private Timestamp lastLogin;
+    private Timestamp statusChangedAt;
     private Timestamp createdAt;
-    private boolean isVerified;
 }

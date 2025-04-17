@@ -5,6 +5,7 @@ import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
+import com.example.authservice.util.TokenUtil;
 import com.example.authservice.util.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,17 +30,16 @@ public class UserApiService {
     private final RedisTemplate<String, String> redisTemplate;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final S3Service s3Service;
+    private final TokenUtil tokenUtil;
 
     public ResponseEntity<NicknameUpdateResponseDTO> updateNickname(String accessToken, String nickname) {
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
         // Redis에 저장된 토큰과 비교
         String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        System.out.println("savedToken: " + savedToken);
-        System.out.println(savedToken.equals(accessToken));
-        System.out.println(accessToken);
-        if (savedToken == null || !savedToken.equals(accessToken)) {
+        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                     NicknameUpdateResponseDTO.builder()
                             .success(false)
@@ -87,11 +87,12 @@ public class UserApiService {
     }
 
     public ResponseEntity<PasswordUpdateResponseDTO> updatePassword(String accessToken, String currentPassword, String newPassword) {
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
         String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(accessToken)) {
+        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                     PasswordUpdateResponseDTO.builder()
                             .success(false)
@@ -149,11 +150,12 @@ public class UserApiService {
     }
 
     public ResponseEntity<DeleteAccountResponseDTO> deleteAccount(String accessToken, HttpServletRequest request, HttpServletResponse response) {
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
         String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(accessToken)) {
+        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                     DeleteAccountResponseDTO.builder()
                             .success(false)
@@ -161,7 +163,6 @@ public class UserApiService {
                             .build()
             );
         }
-
         try {
             // 계정 비활성화 처리
             userMapper.deactivateUser(userId);
@@ -194,12 +195,12 @@ public class UserApiService {
             MultipartFile profileImage
     ) {
         try {
-            // 1. 토큰 유효성 검사 및 유저 정보 추출
-            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+            String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
             Long userId = claims.getId();
 
             String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-            if (savedToken == null || !savedToken.equals(accessToken)) {
+            if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
                 return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                         ProfileImageUpdateResponseDTO.builder()
                                 .success(false)
@@ -208,17 +209,15 @@ public class UserApiService {
                 );
             }
 
-            // 2. 이미지 유효성 체크
             if (profileImage == null || profileImage.isEmpty()) {
                 return ResponseEntity.badRequest().body(
                         ProfileImageUpdateResponseDTO.builder()
                                 .success(false)
-                                .message("프로필 이미지가 비어 있습니다.")
+                                .message("변경하실 프로필 이미지를 등록해주세요.")
                                 .build()
                 );
             }
 
-            // 3. 이미지 업로드
             String imageUrl;
             try {
                 imageUrl = s3Service.upload(profileImage, "profile");
@@ -232,10 +231,8 @@ public class UserApiService {
                 );
             }
 
-            // 4. DB 업데이트
             userMapper.updateProfileImage(userId, imageUrl);
 
-            // 5. 성공 응답
             return ResponseEntity.ok(
                     ProfileImageUpdateResponseDTO.builder()
                             .success(true)
@@ -255,15 +252,15 @@ public class UserApiService {
         }
     }
 
-
-
+    
     public ResponseEntity<UserInfoResponseDTO> userInfo(String accessToken) {
         try {
-            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(accessToken);
+            String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+            ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
             Long userId = claims.getId();
 
             String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-            if (savedToken == null || !savedToken.equals(accessToken)) {
+            if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
                 return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
                         UserInfoResponseDTO.builder()
                                 .success(false)
@@ -306,6 +303,4 @@ public class UserApiService {
             );
         }
     }
-
-
 }

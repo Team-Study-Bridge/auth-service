@@ -6,6 +6,7 @@ import com.example.authservice.model.User;
 import com.example.authservice.type.Status;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
+import com.example.authservice.util.TokenUtil;
 import com.example.authservice.util.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,9 +34,9 @@ public class UserService {
     private final EmailVerificationService emailVerificationService;
     private final BadWordFilter badWordFilter;
     private final S3Service s3Service;
+    private final TokenUtil tokenUtil;
 
     public ResponseEntity<UserJoinResponseDTO> save(UserJoinRequestDTO userJoinRequestDTO, MultipartFile profileImage, HttpServletResponse response) {
-
         ValidationResultDTO validationResult = Validator.validateUserInput(
                 userJoinRequestDTO.getPassword(),
                 userJoinRequestDTO.getNickname()
@@ -93,9 +94,12 @@ public class UserService {
                 );
             }
         }
+        System.out.println("imageUrl" + imageUrl);
 
         userJoinRequestDTO.setProfileImage(imageUrl);
         User user = userJoinRequestDTO.toUser(bCryptPasswordEncoder);
+
+        System.out.println(user.getProfileImage());
 
         try {
             userMapper.insertUser(user);
@@ -106,7 +110,7 @@ public class UserService {
                     .nickname(user.getNickname())
                     .profileImage(user.getProfileImage())
                     .build();
-
+            System.out.println(claimsRequestDTO.getProfileImage());
             String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
             String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
@@ -226,15 +230,15 @@ public class UserService {
         );
     }
 
-
     public ResponseEntity<UserLoginResponseDTO> logout(String accessToken, HttpServletRequest request, HttpServletResponse response) {
     try {
-        Long id = tokenProviderService.getAuthentication(accessToken).getId();
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        Long id = tokenProviderService.getAuthentication(cleanBearerToken).getId();
         redisTemplate.delete("accessToken:" + id);
         redisTemplate.delete("refreshToken:" + id);
 
         CookieUtil.deleteCookie(request, response, "refreshToken");
-
+        System.out.println("cookie: " + request.getCookies().toString());
         return ResponseEntity.ok(
                 UserLoginResponseDTO.builder()
                         .loggedIn(false)

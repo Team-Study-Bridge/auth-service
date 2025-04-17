@@ -26,16 +26,15 @@
                 javaType="com.example.authservice.type.Status"
                 typeHandler="com.example.authservice.type.handler.StatusTypeHandler"/>
 
-        <result property="lastLogin" column="last_login"/>
+        <result property="statusChangedAt" column="status_changed_at"/>
         <result property="createdAt" column="created_at"/>
-        <result property="isVerified" column="is_verified"/>
     </resultMap>
 
 
     <!-- 사용자 등록 -->
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="User">
-        INSERT INTO users (email, password, nickname, role, provider, status)
-        VALUES (#{email}, #{password}, #{nickname}, #{role}, #{provider}, #{status})
+        INSERT INTO users (email, password, nickname, profile_image, role, provider, status)
+        VALUES (#{email}, #{password}, #{nickname}, #{profileImage}, #{role}, #{provider}, #{status})
     </insert>
 
     <update id="updateNickname" parameterType="User" >
@@ -52,7 +51,8 @@
     <!-- 이메일로 사용자 조회 -->
     <select id="findByEmail" parameterType="String" resultMap="userResultMap">
         SELECT *
-        FROM users WHERE email = #{email}
+        FROM users
+        WHERE email = #{email}
     </select>
 
     <select id="findById" parameterType="Long" resultMap="userResultMap">

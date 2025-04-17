@@ -84,7 +84,7 @@ public class UserController {
     })
     @PostMapping(value = "/join", consumes = {"multipart/form-data"})
     public ResponseEntity<UserJoinResponseDTO> join(
-            @RequestPart("userJoinRequestDTO") UserJoinRequestDTO userJoinRequestDTO,
+            @RequestPart("user") UserJoinRequestDTO userJoinRequestDTO,
             @Parameter(description = "프로필 이미지 (선택)", required = false)
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletResponse response

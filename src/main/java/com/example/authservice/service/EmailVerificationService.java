@@ -188,7 +188,7 @@ public class EmailVerificationService {
         return verification != null && verification.isVerified();
     }
 
-    // 특정 이메일에 대한 인증정보 삭제 (내부 로직)
+//     특정 이메일에 대한 인증정보 삭제 (내부 로직)
     public void deleteEmailVerification(String email) {
         EmailVerification verification = emailVerificationMapper.findByEmail(email);
         if (verification != null) {

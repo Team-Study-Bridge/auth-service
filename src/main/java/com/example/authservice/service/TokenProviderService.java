@@ -54,7 +54,6 @@ public class TokenProviderService {
 
     public ClaimsResponseDTO getAuthentication(String token) {
         Claims claims = getClaims(token);
-
         return ClaimsResponseDTO.builder()
                 .id(Long.valueOf(claims.getSubject()))
                 .nickname(claims.get("nickname", String.class))
