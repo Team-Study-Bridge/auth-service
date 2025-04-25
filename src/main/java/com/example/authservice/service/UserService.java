@@ -1,8 +1,12 @@
 package com.example.authservice.service;
 
 import com.example.authservice.dto.*;
+import com.example.authservice.exception.FileEmptyException;
+import com.example.authservice.exception.ImageSizeExceededException;
+import com.example.authservice.exception.InvalidImageExtensionException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
+import com.example.authservice.type.FileType;
 import com.example.authservice.type.Status;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
@@ -81,25 +85,33 @@ public class UserService {
         }
 
         String imageUrl = null;
-        if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                imageUrl = s3Service.upload(profileImage, "profile");
-            } catch (IOException e) {
-                log.error("프로필 이미지 업로드 실패: {}", e.getMessage());
-                return ResponseEntity.internalServerError().body(
-                        UserJoinResponseDTO.builder()
-                                .success(false)
-                                .message("프로필 이미지 업로드에 실패했습니다.")
-                                .build()
-                );
-            }
+        try {
+            imageUrl = s3Service.upload(profileImage, FileType.IMAGE);
+        } catch (ImageSizeExceededException e) {
+            return ResponseEntity.badRequest().body(
+                    UserJoinResponseDTO.builder()
+                            .success(false)
+                            .message("이미지는 최대 1MB까지만 업로드할 수 있습니다.")
+                            .build()
+            );
+        } catch (InvalidImageExtensionException e) {
+            return ResponseEntity.badRequest().body(
+                    UserJoinResponseDTO.builder()
+                            .success(false)
+                            .message("지원하지 않는 이미지 확장자입니다.")
+                            .build()
+            );
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    UserJoinResponseDTO.builder()
+                            .success(false)
+                            .message("이미지 업로드 중 오류가 발생했습니다.")
+                            .build()
+            );
         }
-        System.out.println("imageUrl" + imageUrl);
 
         userJoinRequestDTO.setProfileImage(imageUrl);
         User user = userJoinRequestDTO.toUser(bCryptPasswordEncoder);
-
-        System.out.println(user.getProfileImage());
 
         try {
             userMapper.insertUser(user);
@@ -110,7 +122,7 @@ public class UserService {
                     .nickname(user.getNickname())
                     .profileImage(user.getProfileImage())
                     .build();
-            System.out.println(claimsRequestDTO.getProfileImage());
+
             String accessToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofHours(2));
             String refreshToken = tokenProviderService.generateToken(claimsRequestDTO, Duration.ofDays(7));
 
@@ -128,15 +140,16 @@ public class UserService {
                             .build()
             );
         } catch (Exception e) {
-            log.error("회원가입 중 오류 발생: {}", e.getMessage());
+            log.error("회원가입 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     UserJoinResponseDTO.builder()
                             .success(false)
-                            .message("회원가입 중 오류가 발생했습니다: " + e.getMessage())
+                            .message("회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
                             .build()
             );
         }
     }
+
 
     public ResponseEntity<UserLoginResponseDTO> login(String email, String password, HttpServletResponse response) {
         User user = userMapper.findByEmail(email);

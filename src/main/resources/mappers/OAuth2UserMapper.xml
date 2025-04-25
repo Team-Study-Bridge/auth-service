@@ -29,7 +29,7 @@
     </select>
 
 
-    <insert id="insertOAuthUser" useGeneratedKeys="true" parameterType="User">
+    <insert id="insertOAuthUser" useGeneratedKeys="true" keyProperty="id" parameterType="User">
         INSERT INTO users (provider_id, nickname, email, provider)
         VALUES (#{providerId}, #{nickname}, #{email}, #{provider})
     </insert>

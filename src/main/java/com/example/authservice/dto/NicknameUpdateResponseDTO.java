@@ -17,4 +17,6 @@ public class NicknameUpdateResponseDTO {
 
     @Schema(description = "변경된 닉네임", example = "영진짱")
     private String nickname;
+
+    private String accessToken;
 }

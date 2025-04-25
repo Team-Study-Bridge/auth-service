@@ -84,12 +84,12 @@ public class UserController {
     })
     @PostMapping(value = "/join", consumes = {"multipart/form-data"})
     public ResponseEntity<UserJoinResponseDTO> join(
-            @RequestPart("user") UserJoinRequestDTO userJoinRequestDTO,
+            @RequestPart("user") UserJoinRequestDTO user,
             @Parameter(description = "프로필 이미지 (선택)", required = false)
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletResponse response
     ) {
-        return userService.save(userJoinRequestDTO, profileImage, response);
+        return userService.save(user, profileImage, response);
     }
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.")

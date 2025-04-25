@@ -13,6 +13,8 @@ public interface UserMapper {
 
     User findById(@Param("id") Long userId);
 
+    Role findRoleById(@Param("id") Long userId);
+
     User findByEmail(@Param("email") String email);
 
     String findEmailByEmail(@Param("email") String email);
@@ -23,7 +25,7 @@ public interface UserMapper {
 
     void updatePassword(@Param("id") Long userId, @Param("password") String encryptedPassword);
 
-    void updateStatus(@Param("id") Long id, @Param("status") String status);
+    void updateRole(@Param("id") Long id, @Param("role") Role role);
 
     void deleteUserById(Long userId);
 
@@ -32,4 +34,6 @@ public interface UserMapper {
     void updateProfileImage(@Param("id") Long id, @Param("profileImage") String profileImage);
 
     Role isAdmin(@Param("id") Long userId);
+
+    String findProfileImageById(@Param("id") Long userId);
 }

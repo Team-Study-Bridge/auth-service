@@ -1,8 +1,12 @@
 package com.example.authservice.service;
 
 import com.example.authservice.dto.*;
+import com.example.authservice.exception.ImageSizeExceededException;
+import com.example.authservice.exception.InvalidImageExtensionException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
+import com.example.authservice.type.FileType;
+import com.example.authservice.type.Role;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
 import com.example.authservice.util.TokenUtil;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Service
@@ -37,7 +42,6 @@ public class UserApiService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
-        // Redis에 저장된 토큰과 비교
         String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
         if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
@@ -48,7 +52,6 @@ public class UserApiService {
             );
         }
 
-        // 닉네임 유효성 검사
         if (!Validator.validateNickname(nickname)) {
             return ResponseEntity.badRequest().body(
                     NicknameUpdateResponseDTO.builder()
@@ -69,11 +72,23 @@ public class UserApiService {
 
         try {
             userMapper.updateNickname(userId, nickname);
+
+            User updatedUser = userMapper.findById(userId);
+            ClaimsRequestDTO newClaims = ClaimsRequestDTO.builder()
+                    .userId(userId)
+                    .nickname(updatedUser.getNickname())
+                    .profileImage(updatedUser.getProfileImage())
+                    .build();
+
+            String newAccessToken = tokenProviderService.generateToken(newClaims, Duration.ofHours(2));
+            redisTemplate.opsForValue().set("accessToken:" + userId, newAccessToken, Duration.ofHours(2));
+
             return ResponseEntity.ok(
                     NicknameUpdateResponseDTO.builder()
                             .success(true)
                             .message("닉네임이 성공적으로 변경되었습니다.")
                             .nickname(nickname)
+                            .accessToken(newAccessToken)
                             .build()
             );
         } catch (Exception e) {
@@ -218,29 +233,55 @@ public class UserApiService {
                 );
             }
 
-            String imageUrl;
-            try {
-                imageUrl = s3Service.upload(profileImage, "profile");
-            } catch (IOException e) {
-                log.error("프로필 이미지 업로드 실패", e);
-                return ResponseEntity.internalServerError().body(
-                        ProfileImageUpdateResponseDTO.builder()
-                                .success(false)
-                                .message("이미지 업로드 중 오류가 발생했습니다.")
-                                .build()
-                );
+            String oldImageUrl = userMapper.findProfileImageById(userId);
+            if (oldImageUrl != null && !oldImageUrl.isBlank()) {
+                s3Service.delete(oldImageUrl);
             }
 
+            String imageUrl = s3Service.upload(profileImage, FileType.IMAGE);
             userMapper.updateProfileImage(userId, imageUrl);
+
+            User updatedUser = userMapper.findById(userId);
+            ClaimsRequestDTO newClaims = ClaimsRequestDTO.builder()
+                    .userId(userId)
+                    .nickname(updatedUser.getNickname())
+                    .profileImage(updatedUser.getProfileImage())
+                    .build();
+
+            String newAccessToken = tokenProviderService.generateToken(newClaims, Duration.ofHours(2));
+            redisTemplate.opsForValue().set("accessToken:" + userId, newAccessToken, Duration.ofHours(2));
 
             return ResponseEntity.ok(
                     ProfileImageUpdateResponseDTO.builder()
                             .success(true)
                             .message("프로필 이미지가 성공적으로 업데이트되었습니다.")
                             .profileImage(imageUrl)
+                            .accessToken(newAccessToken)
                             .build()
             );
 
+        } catch (ImageSizeExceededException e) {
+            return ResponseEntity.badRequest().body(
+                    ProfileImageUpdateResponseDTO.builder()
+                            .success(false)
+                            .message("이미지는 최대 1MB까지만 업로드할 수 있습니다.")
+                            .build()
+            );
+        } catch (InvalidImageExtensionException e) {
+            return ResponseEntity.badRequest().body(
+                    ProfileImageUpdateResponseDTO.builder()
+                            .success(false)
+                            .message("지원하지 않는 이미지 확장자입니다.")
+                            .build()
+            );
+        } catch (IOException e) {
+            log.error("S3 업로드 IOException", e);
+            return ResponseEntity.internalServerError().body(
+                    ProfileImageUpdateResponseDTO.builder()
+                            .success(false)
+                            .message("이미지 업로드 중 서버 오류가 발생했습니다.")
+                            .build()
+            );
         } catch (Exception e) {
             log.error("프로필 이미지 업데이트 전체 실패", e);
             return ResponseEntity.internalServerError().body(
@@ -252,7 +293,7 @@ public class UserApiService {
         }
     }
 
-    
+
     public ResponseEntity<UserInfoResponseDTO> userInfo(String accessToken) {
         try {
             String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
@@ -297,6 +338,51 @@ public class UserApiService {
             log.error("유저 정보 조회 중 예외 발생", e);
             return ResponseEntity.internalServerError().body(
                     UserInfoResponseDTO.builder()
+                            .success(false)
+                            .message("서버 오류로 사용자 정보를 불러오지 못했습니다.")
+                            .build()
+            );
+        }
+    }
+
+    public ResponseEntity<UserInfoRoleResponseDTO> userInfoRole(String accessToken) {
+        try {
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
+        Long userId = claims.getId();
+
+        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
+        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
+                    UserInfoRoleResponseDTO.builder()
+                            .success(false)
+                            .message("유효하지 않은 토큰입니다.")
+                            .build()
+            );
+        }
+
+        Role userRole = userMapper.findRoleById(userId);
+        if (userRole == null) {
+            return ResponseEntity.badRequest().body(
+                    UserInfoRoleResponseDTO.builder()
+                            .success(false)
+                            .message("사용자 정보를 찾을 수 없습니다.")
+                            .build()
+            );
+        }
+
+        return ResponseEntity.ok(
+                UserInfoRoleResponseDTO.builder()
+                        .success(true)
+                        .message("사용자의 정보를 정상적으로 불러왔습니다.")
+                        .role(userRole)
+                        .build()
+        );
+
+        } catch (Exception e) {
+            log.error("유저 정보 조회 중 예외 발생", e);
+            return ResponseEntity.internalServerError().body(
+                    UserInfoRoleResponseDTO.builder()
                             .success(false)
                             .message("서버 오류로 사용자 정보를 불러오지 못했습니다.")
                             .build()

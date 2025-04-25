@@ -13,7 +13,9 @@ import java.sql.Timestamp;
 @Getter
 @Builder
 public class User {
+    @Setter
     private Long id;
+
     private String email;
     private String password;
     private String nickname;

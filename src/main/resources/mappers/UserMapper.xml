@@ -48,6 +48,12 @@
         FROM users WHERE email = #{email}
     </select>
 
+    <select id="findRoleById" parameterType="Long" resultType="com.example.authservice.type.Role">
+        SELECT role
+        FROM users
+        WHERE id = #{id}
+    </select>
+
     <!-- 이메일로 사용자 조회 -->
     <select id="findByEmail" parameterType="String" resultMap="userResultMap">
         SELECT *
@@ -61,7 +67,7 @@
         WHERE id = #{id}
     </select>
 
-    <select id="isAdmin" resultType="com.example.authservice.type.Role" resultMap="userResultMap" >
+    <select id="isAdmin" resultType="com.example.authservice.type.Role">
         SELECT role
         FROM users
         WHERE id = #{id}
@@ -69,6 +75,12 @@
 
     <select id="findStatusById" parameterType="Long" resultType="com.example.authservice.type.Status">
         SELECT status
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <select id="findProfileImageById" resultType="String" parameterType="long">
+        SELECT profile_image
         FROM users
         WHERE id = #{id}
     </select>
@@ -94,6 +106,12 @@
     <update id="updateProfileImage">
         UPDATE users
         SET profile_image = #{profileImage}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRole">
+        UPDATE users
+        SET role = #{role, typeHandler=com.example.authservice.type.handler.RoleTypeHandler}
         WHERE id = #{id}
     </update>
 

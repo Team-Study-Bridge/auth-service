@@ -3,10 +3,7 @@ package com.example.authservice.config.jwt;
 import com.example.authservice.dto.ApiErrorResponseDTO;
 import com.example.authservice.dto.ClaimsResponseDTO;
 import com.example.authservice.mapper.UserMapper;
-import com.example.authservice.model.User;
 import com.example.authservice.service.TokenProviderService;
-import com.example.authservice.type.Role;
-import com.example.authservice.config.security.oauth.CustomOAuth2User;
 import com.example.authservice.type.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -15,9 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -79,24 +73,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 5. 인증 객체 등록
-        CustomOAuth2User customUser = new CustomOAuth2User(
-                User.builder()
-                        .id(userId)
-                        .nickname(claims.getNickname())
-                        .profileImage(claims.getProfileImage())
-                        .role(Role.STUDENT)
-                        .build(),
-                token,
-                null
-        );
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(customUser, null, customUser.getAuthorities());
-
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 

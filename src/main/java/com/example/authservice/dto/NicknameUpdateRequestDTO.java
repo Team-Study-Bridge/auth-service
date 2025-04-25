@@ -9,6 +9,6 @@ import lombok.Setter;
 @Schema(description = "닉네임 변경 요청 DTO")
 public class NicknameUpdateRequestDTO {
 
-    @Schema(description = "새로 변경할 닉네임", example = "영진짱", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "새로 변경할 닉네임", example = "예시닉네임", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nickname;
 }

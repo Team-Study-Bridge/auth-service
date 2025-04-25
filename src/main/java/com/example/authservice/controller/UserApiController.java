@@ -19,57 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "회원 정보 관리", description = "회원의 닉네임, 비밀번호, 프로필 이미지 수정 및 탈퇴, 정보 조회 API")
 @RestController
-@RequestMapping("/api/auths")
+@RequestMapping("/auths/api")
 @RequiredArgsConstructor
 public class UserApiController {
 
     private final UserApiService userApiService;
 
-    @Operation(summary = "닉네임 수정", description = "회원의 닉네임을 수정합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "닉네임 수정 성공",
-                    content = @Content(schema = @Schema(implementation = NicknameUpdateResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "성공",
-                                    value = "{\n" +
-                                            "  \"success\": true,\n" +
-                                            "  \"message\": \"닉네임이 성공적으로 변경되었습니다.\",\n" +
-                                            "  \"nickname\": \"newNickname\"\n" +
-                                            "}"
-                            ))),
-            @ApiResponse(responseCode = "400", description = "닉네임 유효성 검사 실패",
-                    content = @Content(examples = @ExampleObject(
-                            name = "형식 오류",
-                            value = "{\n" +
-                                    "  \"success\": false,\n" +
-                                    "  \"message\": \"닉네임은 2~10자이며, 공백이나 특수문자를 포함할 수 없습니다.\"\n" +
-                                    "}"
-                    ))),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰",
-                    content = @Content(examples = @ExampleObject(
-                            name = "토큰 오류",
-                            value = "{\n" +
-                                    "  \"success\": false,\n" +
-                                    "  \"message\": \"유효하지 않은 토큰입니다.\"\n" +
-                                    "}"
-                    ))),
-            @ApiResponse(responseCode = "422", description = "금지된 닉네임",
-                    content = @Content(examples = @ExampleObject(
-                            name = "금지어",
-                            value = "{\n" +
-                                    "  \"success\": false,\n" +
-                                    "  \"message\": \"사용할 수 없는 닉네임입니다.\"\n" +
-                                    "}"
-                    ))),
-            @ApiResponse(responseCode = "500", description = "서버 오류",
-                    content = @Content(examples = @ExampleObject(
-                            name = "서버 오류",
-                            value = "{\n" +
-                                    "  \"success\": false,\n" +
-                                    "  \"message\": \"닉네임 변경 중 오류가 발생했습니다: ...\"\n" +
-                                    "}"
-                    )))
-    })
     @PutMapping("/nickname")
     public ResponseEntity<NicknameUpdateResponseDTO> updateNickname(
             @RequestHeader("Authorization") String accessToken,
@@ -253,5 +208,12 @@ public class UserApiController {
             @RequestHeader("Authorization") String accessToken
     ) {
         return userApiService.userInfo(accessToken);
+    }
+
+    @GetMapping("/info-role")
+    public ResponseEntity<UserInfoRoleResponseDTO> userInfoRole(
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        return userApiService.userInfoRole(accessToken);
     }
 }

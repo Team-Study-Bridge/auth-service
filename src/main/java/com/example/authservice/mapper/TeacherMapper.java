@@ -16,19 +16,21 @@ public interface TeacherMapper {
             @Param("name") String name,
             @Param("bio") String bio,
             @Param("category") String category,
-            @Param("profileImageUrl") String profileImageUrl,
-            @Param("resumeFileUrl") String resumeFileUrl
+            @Param("profileImage") String profileImage,
+            @Param("resumeFile") String resumeFile
     );
 
     boolean existsByUserId(@Param("userId") Long userId);
 
-    void updateTeacherStatus(@Param("id") Long id, @Param("teacherStatus") TeacherStatus teacherStatus);
+    void updateTeacherStatus(@Param("userId") Long userId, @Param("teacherStatus") TeacherStatus teacherStatus);
 
     List<TeacherSummaryDTO> findTeachersWithPaging(@Param("offset") int offset,
                                                    @Param("size") int size,
-                                                   @Param("status") TeacherStatus teacherStatus);
+                                                   @Param("teacherStatus") TeacherStatus teacherStatus);
 
-    int countTeachers(@Param("status") TeacherStatus teacherStatus);
+    int countTeachers(@Param("teacherStatus") TeacherStatus teacherStatus);
 
     Teacher findByUserId(@Param("userId") Long userId);
+
+    String findTeacherByName(@Param("userId") Long userId);
 }

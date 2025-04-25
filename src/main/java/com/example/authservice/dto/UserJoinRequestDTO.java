@@ -32,7 +32,7 @@ public class UserJoinRequestDTO {
     @Schema(description = "프로필 이미지 URL", example = "https://bucket.s3.amazonaws.com/profile.jpg")
     private String profileImage;
 
-    @Schema(description = "역할 (예: STUDENT, TEACHER, ADMIN)", example = "STUDENT")
+    @Schema(description = "역할 (예: STUDENT, INSTRUCTOR, ADMIN)", example = "STUDENT")
     private Role role;
 
     @Schema(description = "가입 제공자 (예: LOCAL, NAVER, GOOGLE)", example = "LOCAL")
