@@ -26,12 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환용
 
-
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String uri = request.getRequestURI();
+        return uri.matches("^/api/teachers/\\d+/profile$"); // ✅ 이 경로는 필터를 **타지 않음**
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
         String token = extractToken(request);
         if (token == null) {
             filterChain.doFilter(request, response);

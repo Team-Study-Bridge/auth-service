@@ -73,10 +73,20 @@ public class TeacherController {
 
     @PostMapping("/api/teacher-name")
     public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(
-            @RequestHeader("Authorization") String accessToken,
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getTeacherName(accessToken, userIdRequestDTO.getUserId());
+        return teacherService.getTeacherName(userIdRequestDTO.getUserId());
     }
 
+    @GetMapping("/role")
+    public ResponseEntity<IsApprovedInstructorResponseDTO> getTeacherRole(
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        return teacherService.getTeacherRole(accessToken);
+    }
+
+    @GetMapping("/api/teachers/{userId}/profile")
+    public InstructorProfileResponseDTO getInstructorProfile(@PathVariable Long userId) {
+        return teacherService.getInstructorProfile(userId);
+    }
 }

@@ -22,8 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -290,20 +288,8 @@ public class TeacherService {
     }
 
 
-    public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(String accessToken, Long userId) {
-        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
-        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
-        Long adminId = claims.getId();
+    public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(Long userId) {
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + adminId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    TeacherGetNameResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 액세스 토큰입니다.")
-                            .build()
-            );
-        }
         try {
             String instructorName = teacherMapper.findTeacherByName(userId);
 
@@ -322,5 +308,38 @@ public class TeacherService {
                             .build()
             );
         }
+    }
+
+    public ResponseEntity<IsApprovedInstructorResponseDTO> getTeacherRole(String accessToken) {
+        String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
+        ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
+        Long TeacherId = claims.getId();
+
+        TeacherStatus teacherStatus = teacherMapper.findTeacherStatus(TeacherId);
+
+        if (teacherStatus != TeacherStatus.APPROVED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    IsApprovedInstructorResponseDTO.builder()
+                            .success(false)
+                            .message("접근권한이 없습니다")
+                            .build()
+            );
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(
+                IsApprovedInstructorResponseDTO.builder()
+                        .success(true)
+                        .build()
+        );
+    }
+
+    public InstructorProfileResponseDTO getInstructorProfile(Long userId) {
+        InstructorProfileResponseDTO instructorProfile = teacherMapper.findInstructorProfileByUserId(userId);
+        System.out.println(instructorProfile.getName());
+        System.out.println(instructorProfile.getProfileImage());
+        System.out.println(instructorProfile.getRating());
+        if (instructorProfile == null) {
+            return null;
+        }
+        return instructorProfile;
     }
 }

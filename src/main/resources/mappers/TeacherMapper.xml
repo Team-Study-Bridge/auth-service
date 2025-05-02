@@ -78,6 +78,12 @@
         WHERE user_id = #{userId}
     </select>
 
+    <select id="findTeacherStatus" resultType="com.example.authservice.type.TeacherStatus">
+        SELECT teacher_status
+        FROM teachers
+        WHERE user_id = #{userId}
+    </select>
+
     <!-- ✅ 상태 업데이트 -->
     <update id="updateTeacherStatus">
         UPDATE teachers
@@ -85,5 +91,20 @@
         WHERE user_id = #{userId}
     </update>
 
+    <select id="findTeacherByName" parameterType="long" resultType="string">
+        SELECT name
+        FROM teachers
+        WHERE user_id = #{userId}
+          AND teacher_status = 'APPROVED'
+    </select>
+
+    <select id="findInstructorProfileByUserId" resultType="com.example.authservice.dto.InstructorProfileResponseDTO">
+        SELECT
+            name,
+            profile_image AS profileImage,
+            rating
+        FROM teachers
+        WHERE user_id = #{userId}
+    </select>
 
 </mapper>

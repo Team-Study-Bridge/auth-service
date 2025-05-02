@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,9 +22,9 @@ public class BadWordFilter {
 
     @PostConstruct
     public void loadBadWords() {
-        try {
+        try (InputStream inputStream = new ClassPathResource(badWordFilePath).getInputStream()) {
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode node = mapper.readTree(new ClassPathResource(badWordFilePath).getFile());
+            JsonNode node = mapper.readTree(inputStream);
             node.get("badWords").forEach(word -> BAD_WORDS.add(word.asText()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -31,11 +32,6 @@ public class BadWordFilter {
     }
 
     public boolean containsBadWord(String nickname) {
-        for (String badWord : BAD_WORDS) {
-            if (nickname.contains(badWord)) {
-                return true;
-            }
-        }
-        return false;
+        return BAD_WORDS.stream().anyMatch(nickname::contains);
     }
 }

@@ -86,7 +86,7 @@ dependencies {
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.673'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
-
+//    implementation 'org.springframework.cloud:spring-cloud-starter-config'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'  // JWT API
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'    // JWT 구현체
@@ -106,4 +106,3 @@ dependencyManagement {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }
-

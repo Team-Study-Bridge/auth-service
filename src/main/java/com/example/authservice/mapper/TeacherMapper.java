@@ -1,5 +1,6 @@
 package com.example.authservice.mapper;
 
+import com.example.authservice.dto.InstructorProfileResponseDTO;
 import com.example.authservice.dto.TeacherSummaryDTO;
 import com.example.authservice.model.Teacher;
 import com.example.authservice.type.TeacherStatus;
@@ -33,4 +34,8 @@ public interface TeacherMapper {
     Teacher findByUserId(@Param("userId") Long userId);
 
     String findTeacherByName(@Param("userId") Long userId);
+
+    TeacherStatus findTeacherStatus(@Param("userId") Long userId);
+
+    InstructorProfileResponseDTO findInstructorProfileByUserId(@Param("userId") Long userId);
 }

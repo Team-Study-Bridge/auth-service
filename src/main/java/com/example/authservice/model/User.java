@@ -26,5 +26,6 @@ public class User {
     private String profileImage;
     private Status status;
     private Timestamp statusChangedAt;
+    private Timestamp lastLoginAt;
     private Timestamp createdAt;
 }
