@@ -9,7 +9,7 @@ import lombok.Getter;
 public class TeacherDetailResponseDTO {
     private boolean success;
     private String message;
-    private Long userId;
+    private Long id;
     private String name;
     private String bio;
     private String category;

@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 @Builder
 public class TeacherSummaryDTO {
     private Long id;
-    private Long userId;
     private String name;
     private String bio;
     private String category;

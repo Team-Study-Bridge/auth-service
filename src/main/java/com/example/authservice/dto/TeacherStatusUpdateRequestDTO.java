@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TeacherStatusUpdateRequestDTO {
-    private Long userId;
+    private Long id;
     private boolean selectStatus;
 }

@@ -14,7 +14,6 @@ import com.example.authservice.util.TokenUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import java.util.List;
 public class TeacherService {
 
     private final TokenProviderService tokenProviderService;
-    private final RedisTemplate<String, String> redisTemplate;
     private final S3Service s3Service;
     private final TeacherMapper teacherMapper;
     private final UserMapper userMapper;
@@ -43,17 +41,7 @@ public class TeacherService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    TeacherApplyResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 액세스 토큰입니다.")
-                            .build()
-            );
-        }
-
-        if (teacherMapper.existsByUserId(userId)) {
+        if (teacherMapper.existsById(userId)) {
             return ResponseEntity.badRequest().body(
                     TeacherApplyResponseDTO.builder()
                             .success(false)
@@ -69,11 +57,10 @@ public class TeacherService {
         String resumeFileUrl = null;
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
-                profileImageUrl = s3Service.upload(profileImage, FileType.IMAGE);
+                profileImageUrl = s3Service.upload(profileImage, FileType.INSTRUCTOR_IMAGE, userId);
             }
-
             if (resume != null && !resume.isEmpty()) {
-                resumeFileUrl = s3Service.upload(resume, FileType.RESUME);
+                resumeFileUrl = s3Service.upload(resume, FileType.RESUME, userId);
             }
         } catch (ImageSizeExceededException e) {
             return ResponseEntity.badRequest().body(
@@ -129,15 +116,6 @@ public class TeacherService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanToken);
         Long adminId = claims.getId();
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + adminId);
-        if (savedToken == null || !savedToken.equals(cleanToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-                    .body(TeacherStatusUpdateResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 액세스 토큰입니다.")
-                            .build());
-        }
-
         if (userMapper.isAdmin(adminId) != Role.ADMIN) {
             return ResponseEntity.status(HttpServletResponse.SC_FORBIDDEN)
                     .body(TeacherStatusUpdateResponseDTO.builder()
@@ -145,9 +123,10 @@ public class TeacherService {
                             .message("권한이 없습니다.")
                             .build());
         }
+        System.out.println(req.getId());
 
-        Long targetUserId = req.getUserId();
-        if (!teacherMapper.existsByUserId(targetUserId)) {
+        Long targetId = req.getId();
+        if (!teacherMapper.existsById(targetId)) {
             return ResponseEntity.badRequest()
                     .body(TeacherStatusUpdateResponseDTO.builder()
                             .success(false)
@@ -165,9 +144,9 @@ public class TeacherService {
 
         try {
             // teacher 테이블 상태 변경
-            teacherMapper.updateTeacherStatus(targetUserId, newTeacherStatus);
+            teacherMapper.updateTeacherStatus(targetId, newTeacherStatus);
             // users 테이블 status 컬럼 업데이트
-            userMapper.updateRole(targetUserId, newRole);
+            userMapper.updateRole(targetId, newRole);
 
             String msg = req.isSelectStatus()
                     ? "회원의 강사권한이 승인되었습니다."
@@ -189,7 +168,6 @@ public class TeacherService {
         }
     }
 
-
     public ResponseEntity<TeacherListResponseDTO> getTeacherList(
             String accessToken,
             int page,
@@ -199,16 +177,6 @@ public class TeacherService {
         String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long adminId = claims.getId();
-
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + adminId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    TeacherListResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 액세스 토큰입니다.")
-                            .build()
-            );
-        }
 
         if (userMapper.isAdmin(adminId) != Role.ADMIN) {
             return ResponseEntity.status(HttpServletResponse.SC_FORBIDDEN).body(
@@ -243,16 +211,6 @@ public class TeacherService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long adminId = claims.getId();
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + adminId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    TeacherDetailResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 액세스 토큰입니다.")
-                            .build()
-            );
-        }
-
         if (userMapper.isAdmin(adminId) != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     TeacherDetailResponseDTO.builder()
@@ -262,7 +220,7 @@ public class TeacherService {
             );
         }
 
-        Teacher teacher = teacherMapper.findByUserId(userId);
+        Teacher teacher = teacherMapper.findById(userId);
         if (teacher == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     TeacherDetailResponseDTO.builder()
@@ -276,7 +234,7 @@ public class TeacherService {
                 TeacherDetailResponseDTO.builder()
                         .success(true)
                         .message("강사 상세 조회 성공")
-                        .userId(teacher.getUserId())
+                        .id(teacher.getId())
                         .name(teacher.getName())
                         .bio(teacher.getBio())
                         .category(teacher.getCategory())
@@ -286,7 +244,6 @@ public class TeacherService {
                         .build()
         );
     }
-
 
     public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(Long userId) {
 
@@ -332,11 +289,8 @@ public class TeacherService {
         );
     }
 
-    public InstructorProfileResponseDTO getInstructorProfile(Long userId) {
-        InstructorProfileResponseDTO instructorProfile = teacherMapper.findInstructorProfileByUserId(userId);
-        System.out.println(instructorProfile.getName());
-        System.out.println(instructorProfile.getProfileImage());
-        System.out.println(instructorProfile.getRating());
+    public InstructorProfileResponseDTO getInstructorProfile(Long id) {
+        InstructorProfileResponseDTO instructorProfile = teacherMapper.findInstructorProfileById(id);
         if (instructorProfile == null) {
             return null;
         }

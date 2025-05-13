@@ -42,16 +42,6 @@ public class UserApiService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    NicknameUpdateResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 토큰입니다.")
-                            .build()
-            );
-        }
-
         if (!Validator.validateNickname(nickname)) {
             return ResponseEntity.badRequest().body(
                     NicknameUpdateResponseDTO.builder()
@@ -106,15 +96,6 @@ public class UserApiService {
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
 
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    PasswordUpdateResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 토큰입니다.")
-                            .build()
-            );
-        }
 
         User user = userMapper.findById(userId);
         if (user == null) {
@@ -168,16 +149,6 @@ public class UserApiService {
         String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
-
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    DeleteAccountResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 토큰입니다.")
-                            .build()
-            );
-        }
         try {
             // 계정 비활성화 처리
             userMapper.deactivateUser(userId);
@@ -214,15 +185,6 @@ public class UserApiService {
             ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
             Long userId = claims.getId();
 
-            String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-            if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                        ProfileImageUpdateResponseDTO.builder()
-                                .success(false)
-                                .message("유효하지 않은 액세스 토큰입니다.")
-                                .build()
-                );
-            }
 
             if (profileImage == null || profileImage.isEmpty()) {
                 return ResponseEntity.badRequest().body(
@@ -300,15 +262,6 @@ public class UserApiService {
             ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
             Long userId = claims.getId();
 
-            String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-            if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                        UserInfoResponseDTO.builder()
-                                .success(false)
-                                .message("유효하지 않은 토큰입니다.")
-                                .build()
-                );
-            }
 
             User user = userMapper.findById(userId);
             if (user == null) {
@@ -350,16 +303,6 @@ public class UserApiService {
         String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
         Long userId = claims.getId();
-
-        String savedToken = redisTemplate.opsForValue().get("accessToken:" + userId);
-        if (savedToken == null || !savedToken.equals(cleanBearerToken)) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(
-                    UserInfoRoleResponseDTO.builder()
-                            .success(false)
-                            .message("유효하지 않은 토큰입니다.")
-                            .build()
-            );
-        }
 
         Role userRole = userMapper.findRoleById(userId);
         if (userRole == null) {

@@ -3,12 +3,6 @@ package com.example.authservice.controller;
 import com.example.authservice.dto.*;
 import com.example.authservice.service.TeacherService;
 import com.example.authservice.type.TeacherStatus;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +36,6 @@ public class TeacherController {
                 .build());
     }
 
-
     @PutMapping("/status")
     public ResponseEntity<TeacherStatusUpdateResponseDTO> updateStatus(
             @RequestHeader("Authorization") String accessToken,
@@ -68,14 +61,14 @@ public class TeacherController {
             @RequestHeader("Authorization") String accessToken,
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getUserId());
+        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getId());
     }
 
     @PostMapping("/api/teacher-name")
     public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getTeacherName(userIdRequestDTO.getUserId());
+        return teacherService.getTeacherName(userIdRequestDTO.getId());
     }
 
     @GetMapping("/role")
@@ -85,8 +78,8 @@ public class TeacherController {
         return teacherService.getTeacherRole(accessToken);
     }
 
-    @GetMapping("/api/teachers/{userId}/profile")
-    public InstructorProfileResponseDTO getInstructorProfile(@PathVariable Long userId) {
-        return teacherService.getInstructorProfile(userId);
+    @GetMapping("/api/teachers/{id}/profile")
+    public InstructorProfileResponseDTO getInstructorProfile(@PathVariable Long id) {
+        return teacherService.getInstructorProfile(id);
     }
 }

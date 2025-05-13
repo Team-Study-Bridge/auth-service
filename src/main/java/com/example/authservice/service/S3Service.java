@@ -10,8 +10,6 @@ import com.example.authservice.type.FileType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,46 +26,61 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    // userId가 있을 때 (고정 파일명)
+    public String upload(MultipartFile file, FileType fileType, Long userId) throws IOException {
+        validateFile(file, fileType);
+
+        String extension = getFileExtension(file.getOriginalFilename());
+        String fileName = switch (fileType) {
+            case IMAGE -> String.format("%s/Profile_%d.%s", fileType.getDirectory(), userId, extension);
+            case INSTRUCTOR_IMAGE -> String.format("%s/InstructorProfile_%d.%s", fileType.getDirectory(), userId, extension);
+            case RESUME -> String.format("%s/Resume_%d.%s", fileType.getDirectory(), userId, extension);
+        };
+
+        uploadToS3(file, fileName);
+        return amazonS3.getUrl(bucket, fileName).toString();
+    }
+
+    // userId가 없을 때 (UUID 파일명)
     public String upload(MultipartFile file, FileType fileType) throws IOException {
-        // 이미지인 경우만 null 허용
+        validateFile(file, fileType);
+
+        String extension = getFileExtension(file.getOriginalFilename());
+        String fileName = String.format("%s/%s.%s", fileType.getDirectory(), UUID.randomUUID(), extension);
+
+        uploadToS3(file, fileName);
+        return amazonS3.getUrl(bucket, fileName).toString();
+    }
+
+    private void validateFile(MultipartFile file, FileType fileType) throws IOException {
         if (file == null || file.isEmpty()) {
-            if (fileType == FileType.IMAGE) {
-                return null;
-            }
+            if (fileType == FileType.IMAGE || fileType == FileType.INSTRUCTOR_IMAGE) return;
             throw new FileEmptyException("파일이 비어 있습니다.");
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String extension = getFileExtension(originalFilename);
-        String contentType = file.getContentType();
-        long fileSize = file.getSize();
-
-        // 확장자 허용 여부 확인
+        String extension = getFileExtension(file.getOriginalFilename());
         if (!fileType.getAllowedExtensions().contains(extension.toLowerCase())) {
-            throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다: " + extension);
+            throw new IllegalArgumentException("허용되지 않는 확장자입니다: " + extension);
         }
 
-        // 사이즈 체크
+        long fileSize = file.getSize();
         if (fileSize > fileType.getMaxSize()) {
-            if (fileType == FileType.IMAGE) {
-                throw new ImageSizeExceededException("이미지는 최대 1MB까지만 업로드할 수 있습니다.");
+            if (fileType == FileType.IMAGE || fileType == FileType.INSTRUCTOR_IMAGE) {
+                throw new ImageSizeExceededException("이미지는 최대 1MB까지 업로드할 수 있습니다.");
             } else {
-                throw new ResumeSizeExceededException("이력서는 최대 10MB까지만 업로드할 수 있습니다.");
+                throw new ResumeSizeExceededException("이력서는 최대 10MB까지 업로드할 수 있습니다.");
             }
         }
-
-        // 업로드
-        String uniqueFileName = String.format("%s/%s.%s", fileType.getDirectory(), UUID.randomUUID(), extension);
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(fileSize);
-        metadata.setContentType(contentType);
-
-        PutObjectRequest request = new PutObjectRequest(bucket, uniqueFileName, file.getInputStream(), metadata);
-        amazonS3.putObject(request);
-
-        return amazonS3.getUrl(bucket, uniqueFileName).toString();
     }
 
+    private void uploadToS3(MultipartFile file, String fileName) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
+
+        PutObjectRequest request = new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata);
+        amazonS3.putObject(request);
+    }
 
     public void delete(String fileUrl) {
         if (fileUrl == null || fileUrl.isBlank()) return;

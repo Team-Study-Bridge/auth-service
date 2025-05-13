@@ -115,4 +115,21 @@
         WHERE id = #{id}
     </update>
 
+    <select id="findEmailById" resultType="string" parameterType="long">
+        SELECT email
+        FROM users
+        WHERE id = #{userId}
+    </select>
+
+    <select id="findAllUsers" resultType="com.example.authservice.dto.UserInfo">
+        SELECT id, nickname, email
+        FROM users
+    </select>
+
+    <select id="findUsersByRole" resultType="com.example.authservice.dto.UserInfo" parameterType="string">
+        SELECT id, nickname, email
+        FROM users
+        WHERE role = #{role}
+    </select>
+
 </mapper>

@@ -13,7 +13,7 @@ import java.util.List;
 public interface TeacherMapper {
 
     void insertTeacher(
-            @Param("userId") Long userId,
+            @Param("id") Long id,
             @Param("name") String name,
             @Param("bio") String bio,
             @Param("category") String category,
@@ -21,9 +21,9 @@ public interface TeacherMapper {
             @Param("resumeFile") String resumeFile
     );
 
-    boolean existsByUserId(@Param("userId") Long userId);
+    boolean existsById(@Param("id") Long id);
 
-    void updateTeacherStatus(@Param("userId") Long userId, @Param("teacherStatus") TeacherStatus teacherStatus);
+    void updateTeacherStatus(@Param("id") Long id, @Param("teacherStatus") TeacherStatus teacherStatus);
 
     List<TeacherSummaryDTO> findTeachersWithPaging(@Param("offset") int offset,
                                                    @Param("size") int size,
@@ -31,11 +31,11 @@ public interface TeacherMapper {
 
     int countTeachers(@Param("teacherStatus") TeacherStatus teacherStatus);
 
-    Teacher findByUserId(@Param("userId") Long userId);
+    Teacher findById(@Param("id") Long id);
 
-    String findTeacherByName(@Param("userId") Long userId);
+    String findTeacherByName(@Param("id") Long id);
 
-    TeacherStatus findTeacherStatus(@Param("userId") Long userId);
+    TeacherStatus findTeacherStatus(@Param("id") Long id);
 
-    InstructorProfileResponseDTO findInstructorProfileByUserId(@Param("userId") Long userId);
+    InstructorProfileResponseDTO findInstructorProfileById(@Param("id") Long id);
 }

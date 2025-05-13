@@ -1,10 +1,13 @@
 package com.example.authservice.mapper;
 
+import com.example.authservice.dto.UserInfo;
 import com.example.authservice.model.User;
 import com.example.authservice.type.Role;
 import com.example.authservice.type.Status;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -36,4 +39,10 @@ public interface UserMapper {
     Role isAdmin(@Param("id") Long userId);
 
     String findProfileImageById(@Param("id") Long userId);
+
+    String findEmailById(@Param("userId") Long userId);
+
+    List<UserInfo> findUsersByRole(@Param("role") String role);
+
+    List<UserInfo> findAllUsers();
 }

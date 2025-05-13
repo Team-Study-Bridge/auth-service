@@ -1,12 +1,12 @@
 package com.example.authservice.service;
 
 import com.example.authservice.dto.*;
-import com.example.authservice.exception.FileEmptyException;
 import com.example.authservice.exception.ImageSizeExceededException;
 import com.example.authservice.exception.InvalidImageExtensionException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
 import com.example.authservice.type.FileType;
+import com.example.authservice.type.Role;
 import com.example.authservice.type.Status;
 import com.example.authservice.util.BadWordFilter;
 import com.example.authservice.util.CookieUtil;
@@ -25,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -268,5 +270,24 @@ public class UserService {
     }
     }
 
+    public String getEmailByUserId(Long userId) {
+        String email = userMapper.findEmailById(userId);
+        if (email == null) {
+            throw new IllegalArgumentException("존재하지 않는 유저입니다: " + userId);
+        }
+        return email;
+    }
 
+    public List<UserInfo> getUsersByType(String type) {
+        try {
+            return switch (type.toUpperCase()) {
+                case "ALL" -> userMapper.findAllUsers();
+                case "STUDENTS" -> userMapper.findUsersByRole(Role.STUDENT.name());
+                case "INSTRUCTORS" -> userMapper.findUsersByRole(Role.INSTRUCTOR.name());
+                default -> throw new IllegalArgumentException("지원하지 않는 타입입니다: " + type);
+            };
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
 }

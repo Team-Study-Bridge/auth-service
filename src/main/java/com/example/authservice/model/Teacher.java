@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 @Getter
 public class Teacher {
     private Long id;
-    private Long userId;
     private String name;
     private String bio;
     private String category;
