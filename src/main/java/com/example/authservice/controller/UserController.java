@@ -1,7 +1,6 @@
 package com.example.authservice.controller;
 
 import com.example.authservice.dto.*;
-import com.example.authservice.model.User;
 import com.example.authservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Tag(name = "회원", description = "회원가입, 로그인, 로그아웃 등 회원 관련 API")
 @RestController
@@ -199,12 +197,12 @@ public class UserController {
         return userService.logout(accessToken, request, response);
     }
 
-    @GetMapping("/{userId}/email")
+    @GetMapping("/users/{userId}/email")
     public ResponseEntity<String> getEmailByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getEmailByUserId(userId));
     }
 
-    @GetMapping("/by-type")
+    @GetMapping("/users/by-type")
     public ResponseEntity<List<UserInfo>> getUsersByType(@RequestParam String type) {
         return ResponseEntity.ok(userService.getUsersByType(type));
     }
