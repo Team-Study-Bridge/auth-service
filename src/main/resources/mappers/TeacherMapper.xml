@@ -89,7 +89,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="findTeacherByName" parameterType="long" resultType="string">
+    <select id="findTeacherByName" resultType="string">
         SELECT name
         FROM teachers
         WHERE id = #{id}

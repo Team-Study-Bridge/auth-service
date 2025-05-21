@@ -249,6 +249,9 @@ public class TeacherService {
 
         try {
             String instructorName = teacherMapper.findTeacherByName(userId);
+            System.out.println("id:: "+userId);
+
+            System.out.println(instructorName);
 
             return ResponseEntity.ok(
                     TeacherGetNameResponseDTO.builder()

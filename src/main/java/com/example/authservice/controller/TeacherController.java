@@ -61,14 +61,14 @@ public class TeacherController {
             @RequestHeader("Authorization") String accessToken,
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getId());
+        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getUserId());
     }
 
     @PostMapping("/api/teacher-name")
     public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getTeacherName(userIdRequestDTO.getId());
+        return teacherService.getTeacherName(userIdRequestDTO.getUserId());
     }
 
     @GetMapping("/role")
