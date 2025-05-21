@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class VerifyCodeResponseDTO {
-    private Boolean success;
+    private boolean success;
     private String message;
 }

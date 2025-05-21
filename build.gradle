@@ -21,25 +21,21 @@ jacoco {
 test {
     useJUnitPlatform()  // JUnit5 사용 설정 (중복이라도 명시적으로 설정)
     finalizedBy jacocoTestReport  // 테스트 후 리포트 생성하도록 설정
+    systemProperty "spring.profiles.active", "test"
 }
 
 jacocoTestReport {
     dependsOn test
     reports {
         html.required.set(true)
-        xml.required.set(false)
-        csv.required.set(false)
+        xml.required.set(true)
+        csv.required.set(true)
         html.outputLocation.set(file("$buildDir/reports/jacoco"))
     }
 
     classDirectories.setFrom(
             files(fileTree(
                     dir: "$buildDir/classes/java/main",
-                    includes: [
-                            'com/example/authservice/service/**',
-                            'com/example/authservice/mapper/**',
-                            'com/example/authservice/model/**'
-                    ],
                     excludes: [
                             '**/config/**',
                             '**/dto/**',
@@ -65,6 +61,7 @@ jacocoTestReport {
         }
     }
 }
+check.dependsOn jacocoTestCoverageVerification
 
 configurations {
     all {
@@ -107,10 +104,11 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.3'
     testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'com.h2database:h2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.assertj:assertj-core:3.26.0'
 }
 
 dependencyManagement {

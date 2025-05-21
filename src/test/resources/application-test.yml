@@ -2,6 +2,16 @@ server:
   port: 9001
 
 spring:
+  cloud:
+    vault:
+      uri: http://localhost:8200
+      authentication: TOKEN
+      token: test-token
+      kv:
+        enabled: true
+        backend: secret
+        default-context: auth-service
+        profile-separator: "-"
   application:
     name: auth-service
   datasource:
@@ -29,9 +39,6 @@ spring:
     multipart:
       max-file-size: 15MB
       max-request-size: 15MB
-
-  config:
-    import: optional:file:./src/test/resources/application-test.yml
 
 naver:
   client-id: dummy-client-id
@@ -69,5 +76,3 @@ logging:
   level:
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
-
-
