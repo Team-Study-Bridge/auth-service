@@ -35,8 +35,19 @@ jacocoTestReport {
     classDirectories.setFrom(
             files(fileTree(
                     dir: "$buildDir/classes/java/main",
-                    includes: ['com/example/authservice/service/UserService.class'],
-                    excludes: ['**/config/**', '**/dto/**', '**/type/**', '**/controller/**', '**/handler/**', '**/util/**']
+                    includes: [
+                            'com/example/authservice/service/**',
+                            'com/example/authservice/mapper/**',
+                            'com/example/authservice/model/**'
+                    ],
+                    excludes: [
+                            '**/config/**',
+                            '**/dto/**',
+                            '**/type/**',
+                            '**/controller/**',
+                            '**/handler/**',
+                            '**/util/**'
+                    ]
             ))
     )
 }
@@ -49,7 +60,7 @@ jacocoTestReport {
             limit {
                 counter = 'INSTRUCTION'
                 value = 'COVEREDRATIO'
-                minimum = 0.3  // 최소 커버리지 80%로 설정
+                minimum = 0.8  // 최소 커버리지 80%로 설정
             }
         }
     }
@@ -99,6 +110,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.h2database:h2'
 }
 
 dependencyManagement {
