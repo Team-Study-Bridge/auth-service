@@ -7,7 +7,7 @@ image:
   tag: be1ad9858f6a8aaa601b23941f532fd874f7554b
   pullPolicy: IfNotPresent
 
-containerPort: 9001
+containerPort: 80
 
 service:
   type: ClusterIP
