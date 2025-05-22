@@ -1,0 +1,14 @@
+name: auth-service
+
+replicaCount: 1
+
+image:
+  repository: 879381276515.dkr.ecr.ap-northeast-2.amazonaws.com/aigungbu/service-images
+  tag: latest
+  pullPolicy: IfNotPresent
+
+containerPort: 9001
+
+service:
+  type: ClusterIP
+  port: 80

@@ -1,24 +1,29 @@
-name: CD - Deploy auth-service to EKS
+name: Build, Push Docker Image, Update Helm Chart, Create PR
 
 on:
   push:
-    branches: [ "main" ]  # main 브랜치로 머지될 때만 CD 실행
+    branches:
+      - main
 
 env:
-  AWS_REGION: ap-northeast-2  # 서울 리전
-  ECR_REPOSITORY: aigongbu/service-images
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: aigungbu/service-images
   IMAGE_TAG: ${{ github.sha }}
-  CLUSTER_NAME: polar-bjh
-  DEPLOYMENT_NAME: auth-service
-  CONTAINER_NAME: auth-service
+  SERVICE_NAME: auth-service
+  HELM_PATH: helm/auth-service/values.yaml
 
 jobs:
-  deploy:
-    name: Build & Deploy auth-service
+  build-push-update:
+    # 무한 순환 방지 조건
+    if: >
+      github.ref == 'refs/heads/main' &&
+      !contains(github.event.head_commit.message, 'update image tag to')
+
     runs-on: ubuntu-latest
+    name: Build, Push, and Create PR
 
     steps:
-      - name: Checkout source code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -32,22 +37,23 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      - name: Build and push Docker image to ECR
+      - name: Build and push Docker image
         run: |
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $SERVICE_NAME:$IMAGE_TAG .
+          docker tag $SERVICE_NAME:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Update Helm values.yaml with new image tag
+        run: |
+          sed -i "s|tag: .*|tag: $IMAGE_TAG|" $HELM_PATH
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
         with:
-          version: 'latest'
-
-      - name: Update kubeconfig for EKS
-        run: |
-          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
-
-      - name: Deploy to EKS
-        run: |
-          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          commit-message: "chore(${{ env.SERVICE_NAME }}): update image tag to $IMAGE_TAG"
+          title: "chore(${{ env.SERVICE_NAME }}): update image tag to $IMAGE_TAG"
+          body: "Auto-generated PR to update Docker image tag to `${{ github.sha }}`"
+          branch: update/${{ env.SERVICE_NAME }}-image-${{ github.sha }}
+          base: main
+          delete-branch: true
