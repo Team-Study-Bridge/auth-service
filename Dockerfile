@@ -16,5 +16,7 @@ FROM gcr.io/distroless/java21-debian12
 WORKDIR /workspace
 COPY --from=builder /workspace/build/libs/*.jar app.jar
 
+EXPOSE 80
+
 # JVM 옵션
 ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "/workspace/app.jar"]
