@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2  # 서울 리전
-  ECR_REPOSITORY: myapp-repo
+  ECR_REPOSITORY: aigongbu/service-images
   IMAGE_TAG: ${{ github.sha }}
   CLUSTER_NAME: aigongbu
   DEPLOYMENT_NAME: auth-service
