@@ -103,7 +103,6 @@ public class EmailVerificationService {
         try {
             emailVerificationMapper.insertEmailVerification(verification);
             sendEmail(email, code);
-            System.out.println("이구간 지나감");
             return ResponseEntity.ok(
                     SendCodeResponseDTO.builder()
                             .success(true)

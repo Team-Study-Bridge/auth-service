@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.authservice.mapper.UserMapper">
+
+    <insert id="insertUser" parameterType="com.example.authservice.model.User">
+        INSERT INTO users (email, password, nickname, profile_image_url, created_at, updated_at)
+        VALUES (#{email}, #{password}, #{nickname}, #{profileImageUrl}, NOW(), NOW())
+    </insert>
+
+    <select id="findByEmail" parameterType="String" resultType="com.example.authservice.model.User">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <select id="findById" parameterType="Long" resultType="com.example.authservice.model.User">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <select id="findUsersByType" parameterType="String" resultType="com.example.authservice.model.User">
+        <choose>
+            <when test="type == 'ALL'">
+                SELECT * FROM users
+            </when>
+            <when test="type == 'STUDENTS'">
+                SELECT * FROM users WHERE user_type = 'STUDENT'
+            </when>
+            <when test="type == 'INSTRUCTORS'">
+                SELECT * FROM users WHERE user_type = 'INSTRUCTOR'
+            </when>
+            <otherwise>
+                SELECT * FROM users WHERE 1=0
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

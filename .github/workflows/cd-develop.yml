@@ -1,36 +1,53 @@
-name: CD - Deploy to ECR (on develop)
+name: CD - Deploy auth-service to EKS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]  # main 브랜치로 머지될 때만 CD 실행
+
+env:
+  AWS_REGION: ap-northeast-2  # 서울 리전
+  ECR_REPOSITORY: myapp-repo
+  IMAGE_TAG: ${{ github.sha }}
+  CLUSTER_NAME: aigongbu
+  DEPLOYMENT_NAME: auth-service
+  CONTAINER_NAME: auth-service
 
 jobs:
-  build-and-deploy:
+  deploy:
+    name: Build & Deploy auth-service
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-#      - name: Build & Test (with JaCoCo)
-#        run: ./gradlew clean test jacocoTestReport
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
-            | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
-      - name: Build Docker image
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - name: Build and push Docker image to ECR
         run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} .
-      - name: Push Docker image to ECR
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Update kubeconfig for EKS
         run: |
-          docker push ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+
+      - name: Deploy to EKS
+        run: |
+          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          kubectl rollout status deployment/$DEPLOYMENT_NAME

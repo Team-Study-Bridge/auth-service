@@ -1,45 +1,46 @@
 server:
-  port: 9001
+  port: 0
 
 spring:
-  cloud:
-    vault:
-      uri: http://localhost:8200
-      authentication: TOKEN
-      token: test-token
-      kv:
-        enabled: true
-        backend: secret
-        default-context: auth-service
-        profile-separator: "-"
   application:
     name: auth-service
+
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: false
+
   data:
     redis:
       host: localhost
       port: 6379
-      password:
+      timeout: 5000ms
+
   mail:
     host: smtp.test.com
     port: 587
     username: test@test.com
     password: dummy
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+
   servlet:
     multipart:
       max-file-size: 15MB
       max-request-size: 15MB
 
+# 외부 서비스 Mock 설정
 naver:
   client-id: dummy-client-id
   client-secret: dummy-secret
@@ -55,24 +56,25 @@ cloud:
     s3:
       bucket: dummy-bucket
 
+# MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/*.xml
   type-aliases-package: com.example.authservice.model
+  configuration:
+    map-underscore-to-camel-case: true
 
+# 애플리케이션 설정
 badword:
-  file-path: word_list.json
+  file-path: classpath:word_list.json
 
 jwt:
-  issuer: dummy@dummy.com
-  secret_key: dummykeydummykeydummykeydummykeydummykeydummykeydummykey
+  issuer: test@test.com
+  secret_key: testsecretkeytestsecretkeytestsecretkeytestsecretkey
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
+# 로깅 설정
 logging:
   level:
-    org.springframework.security.web.FilterChainProxy: DEBUG
-    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    com.example.authservice: INFO
+    org.springframework.web.servlet.mvc.method.annotation: INFO
+    org.testcontainers: WARN
+    com.zaxxer.hikari: WARN

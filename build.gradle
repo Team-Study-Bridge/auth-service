@@ -22,7 +22,15 @@ test {
     useJUnitPlatform()  // JUnit5 사용 설정 (중복이라도 명시적으로 설정)
     finalizedBy jacocoTestReport  // 테스트 후 리포트 생성하도록 설정
     systemProperty "spring.profiles.active", "test"
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+    }
 }
+
 
 jacocoTestReport {
     dependsOn test
@@ -37,10 +45,8 @@ jacocoTestReport {
             files(fileTree(
                     dir: "$buildDir/classes/java/main",
                     excludes: [
-                            '**/config/**',
                             '**/dto/**',
                             '**/type/**',
-                            '**/controller/**',
                             '**/handler/**',
                             '**/util/**'
                     ]
@@ -107,6 +113,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.3'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'com.h2database:h2'
+    testImplementation "org.testcontainers:testcontainers:1.19.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.0"
+    testImplementation 'io.findify:s3mock_2.13:0.2.6'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.assertj:assertj-core:3.26.0'
 }
