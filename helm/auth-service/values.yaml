@@ -13,11 +13,11 @@ env:
   - name: SPRING_PROFILES_ACTIVE
     value: dev
   - name: CONFIG_SERVER_URL
-    value: __CONFIG_SERVER_URL__
+    value: http://config-service:8888
   - name: VAULT_URI
-    value: __VAULT_URI__
+    value: 
   - name: VAULT_TOKEN
-    value: __VAULT_TOKEN__
+    value: 
 
 service:
   type: ClusterIP
