@@ -12,7 +12,14 @@ containerPort: 80
 env:
   - name: SPRING_PROFILES_ACTIVE
     value: dev
+  - name: CONFIG_SERVER_URL
+    value: __CONFIG_SERVER_URL__
+  - name: VAULT_URI
+    value: __VAULT_URI__
+  - name: VAULT_TOKEN
+    value: __VAULT_TOKEN__
 
 service:
   type: ClusterIP
   port: 80
+
