@@ -9,6 +9,10 @@ image:
 
 containerPort: 80
 
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: dev
+
 service:
   type: ClusterIP
   port: 80
