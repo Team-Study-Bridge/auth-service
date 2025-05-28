@@ -17,10 +17,6 @@ resources:
     cpu: 300m
     memory: 384Mi
 
-env:
-  - name: SPRING_PROFILES_ACTIVE
-    value: dev
-
 service:
   type: ClusterIP
   port: 80
