@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: aigungbu/service-images
+  ECR_REPOSITORY: aigongbu/service-images
   IMAGE_TAG: ${{ github.sha }}
   SERVICE_NAME: auth-service
   HELM_PATH: helm/auth-service/values.yaml
@@ -42,12 +42,9 @@ jobs:
           docker tag $SERVICE_NAME:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Update Helm values.yaml with image tag and secrets
+      - name: Update Helm values.yaml with new image tag
         run: |
-          sed -i "s|__IMAGE_TAG__|$IMAGE_TAG|" $HELM_PATH
-          sed -i "s|__CONFIG_SERVER_URL__|${{ secrets.CONFIG_SERVER_URL }}|" $HELM_PATH
-          sed -i "s|__VAULT_URI__|${{ secrets.VAULT_URI }}|" $HELM_PATH
-          sed -i "s|__VAULT_TOKEN__|${{ secrets.VAULT_TOKEN }}|" $HELM_PATH
+          sed -i "s|tag: .*|tag: $IMAGE_TAG|" $HELM_PATH
 
       - name: Create Pull Request
         id: cpr
