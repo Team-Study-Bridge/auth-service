@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 public class User {
     @Setter
     private Long id;
-//dd
+
     private String email;
     private String password;
     private String nickname;
