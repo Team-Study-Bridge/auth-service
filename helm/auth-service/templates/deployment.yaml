@@ -24,10 +24,19 @@ spec:
             preStop:
               exec:
                 command: ["sh", "-c", "sleep 5"]
-          {{- if .Values.env }}
           env:
-            {{- range .Values.env }}
-            - name: {{ .name }}
-              value: {{ .value | quote }}
-            {{- end }}
-          {{- end }}
+            - name: CONFIG_SERVER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service-secrets
+                  key: CONFIG_SERVER_URL
+            - name: VAULT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service-secrets
+                  key: VAULT_URI
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service-secrets
+                  key: VAULT_TOKEN
