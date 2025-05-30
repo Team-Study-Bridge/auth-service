@@ -87,29 +87,31 @@ public class UserService {
         }
 
         String imageUrl = null;
-        try {
-            imageUrl = s3Service.upload(profileImage, FileType.IMAGE);
-        } catch (ImageSizeExceededException e) {
-            return ResponseEntity.badRequest().body(
-                    UserJoinResponseDTO.builder()
-                            .success(false)
-                            .message("이미지는 최대 1MB까지만 업로드할 수 있습니다.")
-                            .build()
-            );
-        } catch (InvalidImageExtensionException e) {
-            return ResponseEntity.badRequest().body(
-                    UserJoinResponseDTO.builder()
-                            .success(false)
-                            .message("지원하지 않는 이미지 확장자입니다.")
-                            .build()
-            );
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    UserJoinResponseDTO.builder()
-                            .success(false)
-                            .message("이미지 업로드 중 오류가 발생했습니다.")
-                            .build()
-            );
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                imageUrl = s3Service.upload(profileImage, FileType.IMAGE);
+            } catch (ImageSizeExceededException e) {
+                return ResponseEntity.badRequest().body(
+                        UserJoinResponseDTO.builder()
+                                .success(false)
+                                .message("이미지는 최대 1MB까지만 업로드할 수 있습니다.")
+                                .build()
+                );
+            } catch (InvalidImageExtensionException e) {
+                return ResponseEntity.badRequest().body(
+                        UserJoinResponseDTO.builder()
+                                .success(false)
+                                .message("지원하지 않는 이미지 확장자입니다.")
+                                .build()
+                );
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                        UserJoinResponseDTO.builder()
+                                .success(false)
+                                .message("이미지 업로드 중 오류가 발생했습니다.")
+                                .build()
+                );
+            }
         }
 
         userJoinRequestDTO.setProfileImage(imageUrl);
