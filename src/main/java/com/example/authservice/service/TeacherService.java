@@ -245,11 +245,11 @@ public class TeacherService {
         );
     }
 
-    public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(Long userId) {
+    public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(Long id) {
 
         try {
-            String instructorName = teacherMapper.findTeacherByName(userId);
-            System.out.println("id:: "+userId);
+            String instructorName = teacherMapper.findTeacherByName(id);
+            System.out.println("id:: "+id);
 
             System.out.println(instructorName);
 
