@@ -205,7 +205,7 @@ public class TeacherService {
 
     public ResponseEntity<TeacherDetailResponseDTO> getAdminTeacherDetail(
             String accessToken,
-            Long userId
+            Long id
     ) {
         String cleanBearerToken = tokenUtil.cleanBearerToken(accessToken);
         ClaimsResponseDTO claims = tokenProviderService.getAuthentication(cleanBearerToken);
@@ -220,7 +220,7 @@ public class TeacherService {
             );
         }
 
-        Teacher teacher = teacherMapper.findById(userId);
+        Teacher teacher = teacherMapper.findById(id);
         if (teacher == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     TeacherDetailResponseDTO.builder()

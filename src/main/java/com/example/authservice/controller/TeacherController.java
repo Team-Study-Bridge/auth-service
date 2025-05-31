@@ -55,20 +55,19 @@ public class TeacherController {
         return teacherService.getTeacherList(accessToken, page, size, status);
     }
 
-
     @PostMapping("/admin/getAdminTeacherDetail")
     public ResponseEntity<TeacherDetailResponseDTO> getAdminTeacherDetail(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getUserId());
+        return teacherService.getAdminTeacherDetail(accessToken, userIdRequestDTO.getId());
     }
 
     @PostMapping("/api/teacher-name")
     public ResponseEntity<TeacherGetNameResponseDTO> getTeacherName(
             @RequestBody UserIdRequestDTO userIdRequestDTO
     ) {
-        return teacherService.getTeacherName(userIdRequestDTO.getUserId());
+        return teacherService.getTeacherName(userIdRequestDTO.getId());
     }
 
     @GetMapping("/role")

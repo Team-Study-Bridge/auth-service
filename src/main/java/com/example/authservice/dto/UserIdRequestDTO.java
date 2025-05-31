@@ -9,5 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserIdRequestDTO {
-    private Long userId;
+    private Long id;
 }
