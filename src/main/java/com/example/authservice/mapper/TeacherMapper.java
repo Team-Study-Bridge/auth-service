@@ -31,7 +31,7 @@ public interface TeacherMapper {
 
     int countTeachers(@Param("teacherStatus") TeacherStatus teacherStatus);
 
-    Teacher findById(@Param("id") Long id);
+    Teacher findById(@Param("id") Long userId);
 
     String findTeacherByName(@Param("id") Long id);
 
